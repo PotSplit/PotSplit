@@ -1,7 +1,0 @@
-
-body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; color: #333; }
-header { background: #1e1e2f; color: white; padding: 20px; text-align: center; }
-nav a { margin: 0 15px; color: #00e0b8; text-decoration: none; }
-.hero { padding: 40px; text-align: center; background: linear-gradient(to right, #0f2027, #203a43, #2c5364); color: white; }
-.cta { display: inline-block; padding: 10px 20px; background: #00e0b8; color: black; border-radius: 8px; margin-top: 20px; text-decoration: none; }
-footer { background: #1e1e2f; color: #ccc; text-align: center; padding: 10px; position: fixed; bottom: 0; width: 100%; }
