@@ -6,37 +6,42 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
-export async function handler(event, context) {
+export async function handler(event) {
   try {
     const { goal, timeframe, style } = JSON.parse(event.body);
 
     if (!goal || !timeframe || !style) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: "Please provide goal, timeframe, and style." }),
+        body: JSON.stringify({ error: "Missing required fields: goal, timeframe, or style." }),
       };
     }
 
     const prompt = `
-You are a wise and inspiring mentor who creates detailed, personalized Destiny Blueprints.
+You are Destiny, an inspiring AI mentor who creates deeply personalized Destiny Blueprints.
 
-User's goal: ${goal}
-Time available each week: ${timeframe}
-Preferred growth style: ${style}
+User goal: "${goal}"
+Available time per week: "${timeframe}"
+Preferred growth style: "${style}"
 
-Generate a clear, structured, and actionable Destiny Blueprint tailored to these inputs.
-Include step-by-step micro-actions, timelines, and motivational guidance.
-Make the blueprint unique and highly relevant to the user's specific situation.
+Using this information, generate a detailed Destiny Blueprint with:
+- 5 clear and achievable micro-milestones
+- Weekly or daily steps matched to their time availability
+- A tone that fits their chosen growth style
+- Motivation and insights they can follow
+- No repetition from other users — each should feel custom
+
+Only output the blueprint. No preamble or follow-up text.
 `;
 
     const completion = await openai.createChatCompletion({
       model: "gpt-4",
       messages: [
-        { role: "system", content: "You are a helpful and insightful mentor for personal growth." },
-        { role: "user", content: prompt.trim() },
+        { role: "system", content: "You are a motivational AI who delivers personalized Destiny Blueprints." },
+        { role: "user", content: prompt },
       ],
       temperature: 0.9,
-      max_tokens: 800,
+      max_tokens: 900,
     });
 
     const blueprint = completion.data.choices[0].message.content.trim();
@@ -49,7 +54,7 @@ Make the blueprint unique and highly relevant to the user's specific situation.
     console.error("Error generating blueprint:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to generate blueprint." }),
+      body: JSON.stringify({ error: "Internal server error." }),
     };
   }
 }
