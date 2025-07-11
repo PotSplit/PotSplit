@@ -1,43 +1,55 @@
-const { Configuration, OpenAIApi } = require("openai");
+import { Configuration, OpenAIApi } from "openai";
 
-exports.handler = async (event) => {
-  const { goal, timeframe, style } = JSON.parse(event.body);
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-  const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-  const openai = new OpenAIApi(configuration);
+const openai = new OpenAIApi(configuration);
 
-  const prompt = `
-You are Destiny, an AI that designs personalized blueprints to help people achieve life goals. 
+export async function handler(event, context) {
+  try {
+    const { goal, timeframe, style } = JSON.parse(event.body);
+
+    if (!goal || !timeframe || !style) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Please provide goal, timeframe, and style." }),
+      };
+    }
+
+    const prompt = `
+You are a wise and inspiring mentor who creates detailed, personalized Destiny Blueprints.
 
 User's goal: ${goal}
-Available time: ${timeframe}
-Growth style: ${style}
+Time available each week: ${timeframe}
+Preferred growth style: ${style}
 
-Create a motivating 5-step Destiny Blueprint with milestone names, progress structure, and mindset tips.
-  `;
+Generate a clear, structured, and actionable Destiny Blueprint tailored to these inputs.
+Include step-by-step micro-actions, timelines, and motivational guidance.
+Make the blueprint unique and highly relevant to the user's specific situation.
+`;
 
-  try {
     const completion = await openai.createChatCompletion({
       model: "gpt-4",
       messages: [
-        { role: "system", content: "You are an expert personal growth coach and strategic planner." },
-        { role: "user", content: prompt }
+        { role: "system", content: "You are a helpful and insightful mentor for personal growth." },
+        { role: "user", content: prompt.trim() },
       ],
-      temperature: 0.85,
+      temperature: 0.9,
+      max_tokens: 800,
     });
 
-    const blueprint = completion.data.choices[0].message.content;
+    const blueprint = completion.data.choices[0].message.content.trim();
 
     return {
       statusCode: 200,
       body: JSON.stringify({ blueprint }),
     };
-  } catch (err) {
+  } catch (error) {
+    console.error("Error generating blueprint:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
+      body: JSON.stringify({ error: "Failed to generate blueprint." }),
     };
   }
-};
+}
