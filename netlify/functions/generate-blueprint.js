@@ -1,60 +1,52 @@
-import { Configuration, OpenAIApi } from "openai";
+// /netlify/functions/generate-blueprint.js
+const { Configuration, OpenAIApi } = require("openai");
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
 const openai = new OpenAIApi(configuration);
 
-export async function handler(event) {
+exports.handler = async function (event) {
   try {
     const { goal, timeframe, style } = JSON.parse(event.body);
 
-    if (!goal || !timeframe || !style) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing required fields: goal, timeframe, or style." }),
-      };
-    }
-
     const prompt = `
-You are Destiny, an inspiring AI mentor who creates deeply personalized Destiny Blueprints.
+You are Destiny, an AI destiny architect.
+Craft a personalized Destiny Blueprint for someone with the following inputs:
 
-User goal: "${goal}"
-Available time per week: "${timeframe}"
-Preferred growth style: "${style}"
+- 🎯 Goal: ${goal}
+- ⏳ Time commitment: ${timeframe}
+- 🌱 Growth style: ${style}
 
-Using this information, generate a detailed Destiny Blueprint with:
-- 5 clear and achievable micro-milestones
-- Weekly or daily steps matched to their time availability
-- A tone that fits their chosen growth style
-- Motivation and insights they can follow
-- No repetition from other users — each should feel custom
+Instructions:
+1. Open with an inspiring message tailored to the user's mindset.
+2. Break their journey into 3 progressive Milestones (titles + explanations).
+3. Provide 5–7 actionable Micro-Steps for Milestone One.
+4. End with a short, emotionally powerful Call to Action.
+5. Make it motivating, visual, and practical.
 
-Only output the blueprint. No preamble or follow-up text.
+Output format: Clean markdown-like bullets or numbered steps, no code blocks.
+
+Be insightful. Speak directly to the user’s future.
 `;
 
-    const completion = await openai.createChatCompletion({
+    const response = await openai.createChatCompletion({
       model: "gpt-4",
-      messages: [
-        { role: "system", content: "You are a motivational AI who delivers personalized Destiny Blueprints." },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.9,
-      max_tokens: 900,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.85,
+      max_tokens: 1000,
     });
 
-    const blueprint = completion.data.choices[0].message.content.trim();
+    const blueprint = response.data.choices[0].message.content;
 
     return {
       statusCode: 200,
       body: JSON.stringify({ blueprint }),
     };
   } catch (error) {
-    console.error("Error generating blueprint:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Internal server error." }),
+      body: JSON.stringify({ error: error.message }),
     };
   }
-}
+};
