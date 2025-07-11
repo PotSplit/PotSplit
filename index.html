@@ -3,162 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PotSplit – Powered by Community, Driven by Fun</title>
-  <link rel="stylesheet" href="style.css"/>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
-      color: #333;
-    }
-
-    header {
-      background-color: #03a84e;
-      color: white;
-      padding: 2rem 1rem;
-      text-align: center;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-      text-align: center;
-    }
-
-    nav {
-      margin-bottom: 1.5rem;
-    }
-
-    nav a {
-      margin: 0 0.5rem;
-      text-decoration: none;
-      font-weight: 600;
-      color: #03a84e;
-      border-bottom: 2px solid transparent;
-    }
-
-    nav a:hover {
-      border-bottom: 2px solid #03a84e;
-    }
-
-    h1 {
-      margin-top: 0;
-      font-size: 2.25rem;
-    }
-
-    p.tagline {
-      font-size: 1.2rem;
-      margin-bottom: 2rem;
-    }
-
-    .buttons {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-      margin: 2rem 0;
-    }
-
-    .buttons a {
-      padding: 0.75rem 1.25rem;
-      background-color: #03a84e;
-      color: white;
-      border-radius: 5px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background-color 0.3s;
-    }
-
-    .buttons a:hover {
-      background-color: #028b3e;
-    }
-
-    ul.bullets {
-      list-style: none;
-      padding: 0;
-      margin: 2rem 0;
-      text-align: left;
-    }
-
-    ul.bullets li {
-      padding: 0.5rem 0;
-    }
-
-    footer {
-      background-color: #eee;
-      color: #555;
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.9rem;
-    }
-
-    footer a {
-      color: #03a84e;
-      text-decoration: none;
-      margin: 0 0.5rem;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-  </style>
+  <title>PotSplit – Community Contribution Hub</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <h1>🎯 Welcome to PotSplit</h1>
-    <p class="tagline">The Central Hub for Transparent, Legal, Community-Supported Contribution Pools</p>
-  </header>
-
-  <div class="container">
+    <p class="tagline">Powered by Community, Driven by Fun.</p>
     <nav>
       <a href="weekly.html">Weekly Draw</a>
       <a href="monthly.html">Monthly Draw</a>
       <a href="creator.html">Group Pot Creator</a>
       <a href="hub.html">Support Hub</a>
-      <a href="terms.html">Legal</a>
+      <a href="legal.html">Legal</a>
     </nav>
+  </header>
 
-    <p>No purchase necessary to participate. Optional contributions help grow the shared pool and support fair operations.</p>
+  <main>
+    <section class="hero">
+      <p>No purchase necessary to enter. Optional contributions help grow the community pot.</p>
+      <div class="buttons">
+        <a href="weekly.html" class="cta">🎟 Enter Weekly</a>
+        <a href="monthly.html" class="cta">💰 Join Monthly</a>
+        <a href="creator.html" class="cta">⚙️ Start a Group Pot</a>
+        <a href="https://buy.stripe.com/3cI5kE4nJ8B3dAE4RveZ201" class="cta">❤️ Become a Supporter</a>
+      </div>
+    </section>
 
-    <div class="buttons">
-      <a href="weekly.html">🎟 Enter Weekly</a>
-      <a href="monthly.html">💰 Join Monthly</a>
-      <a href="creator.html">⚙️ Start a Group Pot</a>
-      <a href="support.html">❤️ Become a Supporter</a>
-    </div>
-
-    <h2>🎉 Why Use PotSplit?</h2>
-    <ul class="bullets">
-      <li>✅ Fully Legal & Stripe Compliant</li>
-      <li>🧾 Free Entry Always Available</li>
-      <li>💳 Optional Contributions Power the Community</li>
-      <li>⚖️ Transparent Distribution, No Hidden Rules</li>
-      <li>🧠 Built for Fun, Fairness, and Collective Support</li>
-    </ul>
-  </div>
+    <section class="why">
+      <h2>🎉 Why Use PotSplit?</h2>
+      <ul>
+        <li>✅ Fully Legal & Stripe Compliant</li>
+        <li>🧾 Free Entry Always Available</li>
+        <li>💳 Optional Contributions Power the Pot</li>
+        <li>⚖️ Transparent Payouts, No Hidden Rules</li>
+        <li>🧠 Built for Fun, Fairness, and Community</li>
+      </ul>
+    </section>
+  </main>
 
   <footer>
     <p>© 2025 PotSplit.com – Built with ❤️ in Canada</p>
-    <a href="terms.html">Terms</a> | 
-    <a href="privacy.html">Privacy</a> | 
-    <a href="disclaimer.html">No Purchase Disclaimer</a>
+    <nav class="footer-links">
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="disclaimer.html">No Purchase Disclaimer</a>
+    </nav>
   </footer>
-<!-- Start of Tawk.to Script -->
-<script type="text/javascript">
-var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
-(function () {
-  var s1 = document.createElement("script"),
-    s0 = document.getElementsByTagName("script")[0];
-  s1.async = true;
-  s1.src = 'https://embed.tawk.to/68704d4c1d7841190f71f335/1ivrarsqc';
-  s1.charset = 'UTF-8';
-  s1.setAttribute('crossorigin', '*');
-  s0.parentNode.insertBefore(s1, s0);
-})();
-</script>
-<!-- End of Tawk.to Script -->
-  
+
+  <!--Start of Tawk.to Script-->
+  <script type="text/javascript">
+  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+  (function(){
+  var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+  s1.async=true;
+  s1.src='https://embed.tawk.to/68704d4c1d7841190f71f335/1ivrarsqc';
+  s1.charset='UTF-8';
+  s1.setAttribute('crossorigin','*');
+  s0.parentNode.insertBefore(s1,s0);
+  })();
+  </script>
+  <!--End of Tawk.to Script-->
+
+  <script src="script.js"></script>
 </body>
 </html>
