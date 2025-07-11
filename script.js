@@ -1,25 +1,29 @@
-// script.js
-function startCountdown(id, endDate) {
-  const display = document.getElementById(id);
-  const end = new Date(endDate).getTime();
+// Placeholder: Add advanced interactivity here if needed later
+console.log("PotSplit JS loaded.");
 
-  function update() {
+// Example countdown timer for future use
+function startCountdown(targetDate, elementId) {
+  const countDownDate = new Date(targetDate).getTime();
+  const countdownFunction = setInterval(function () {
     const now = new Date().getTime();
-    const distance = end - now;
+    const distance = countDownDate - now;
 
     if (distance < 0) {
-      display.innerHTML = "⏰ Draw in progress or ended.";
+      clearInterval(countdownFunction);
+      document.getElementById(elementId).innerText = "Draw closed!";
       return;
     }
 
     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const mins = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const secs = Math.floor((distance % (1000 * 60)) / 1000);
+    const hours = Math.floor(
+      (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+    );
+    const minutes = Math.floor(
+      (distance % (1000 * 60 * 60)) / (1000 * 60)
+    );
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-    display.innerHTML = `⏳ ${days}d ${hours}h ${mins}m ${secs}s`;
-    setTimeout(update, 1000);
-  }
-
-  update();
+    document.getElementById(elementId).innerText =
+      `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  }, 1000);
 }
