@@ -53,18 +53,37 @@
       text-align: center;
       margin-top: 2rem;
     }
-    .cta a {
+    .cta a, button {
       display: inline-block;
       background: #00ffd1;
       color: #000000;
       padding: 1rem 2rem;
+      border: none;
       border-radius: 8px;
       font-weight: 600;
       text-decoration: none;
       transition: background 0.3s;
+      cursor: pointer;
     }
-    .cta a:hover {
+    .cta a:hover, button:hover {
       background: #00c2a1;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      background: #1a1a1a;
+      color: #ffffff;
+    }
+    .result {
+      margin-top: 2rem;
+      background: #1a1a1a;
+      padding: 2rem;
+      border-radius: 10px;
     }
     footer {
       text-align: center;
@@ -98,18 +117,57 @@
       </p>
     </section>
     <section>
-      <h2>🚀 Why It Matters</h2>
-      <p>
-        In a world full of noise, distractions, and confusion — PotSplit delivers clarity. It’s not about coaching or advice.
-        It’s about self-alignment, automation, and actual execution. No community needed. No pressure. Just you and your future.
-      </p>
+      <h2>✨ Generate Your Destiny Blueprint</h2>
+      <form id="destinyForm">
+        <label for="goal">What’s your biggest life goal right now?</label>
+        <input type="text" id="goal" name="goal" required placeholder="e.g., Start a business, Write a novel, Get in shape">
+
+        <label for="timeframe">How much time do you want to invest each week?</label>
+        <input type="text" id="timeframe" name="timeframe" required placeholder="e.g., 5 hours, 30 minutes a day">
+
+        <label for="style">What’s your preferred growth style?</label>
+        <textarea id="style" name="style" rows="3" placeholder="e.g., Fast-paced, Gentle and steady, Visual learner, Accountability-focused"></textarea>
+
+        <div class="cta">
+          <button type="submit">Generate Blueprint</button>
+        </div>
+      </form>
+      <div id="result" class="result" style="display:none;"></div>
     </section>
-    <div class="cta">
-      <a href="#">Generate Your Destiny Blueprint</a>
-    </div>
   </main>
   <footer>
     &copy; 2025 PotSplit.com. All rights reserved.
   </footer>
+
+  <script>
+    const form = document.getElementById('destinyForm');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const goal = document.getElementById('goal').value;
+      const timeframe = document.getElementById('timeframe').value;
+      const style = document.getElementById('style').value;
+
+      const blueprint = `
+        <h3>Your Destiny Blueprint:</h3>
+        <p><strong>Goal:</strong> ${goal}</p>
+        <p><strong>Time Commitment:</strong> ${timeframe}</p>
+        <p><strong>Growth Style:</strong> ${style}</p>
+        <p><strong>Next Steps:</strong></p>
+        <ol>
+          <li>Break your goal into 3 milestones and set a target date for each.</li>
+          <li>Allocate weekly tasks that align with your available time.</li>
+          <li>Review your progress every 7 days and adjust if needed.</li>
+          <li>Reward yourself for completing each milestone with something meaningful.</li>
+        </ol>
+        <p>This is just the beginning. A full AI-generated Destiny Blueprint will be available soon with dynamic content and tracking.</p>
+      `;
+
+      result.innerHTML = blueprint;
+      result.style.display = 'block';
+    });
+  </script>
 </body>
 </html>
