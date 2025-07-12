@@ -1,11 +1,8 @@
-// File: netlify/functions/generate-blueprint.js
+const OpenAI = require("openai");
 
-const { Configuration, OpenAIApi } = require("openai");
-
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 exports.handler = async function (event) {
   try {
@@ -31,14 +28,14 @@ Output format: Clean markdown-style bullets or numbered steps, no code blocks.
 Be insightful. Speak directly to the user’s future.
 `;
 
-    const response = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.85,
       max_tokens: 1000,
     });
 
-    const blueprint = response.data.choices[0].message.content;
+    const blueprint = completion.choices[0].message.content;
 
     return {
       statusCode: 200,
