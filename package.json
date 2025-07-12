@@ -1,8 +1,0 @@
-{
-  "name": "potsplit-functions",
-  "version": "1.0.0",
-  "description": "Netlify functions for PotSplit",
-  "dependencies": {
-    "openai": "^4.0.0"
-  }
-}
