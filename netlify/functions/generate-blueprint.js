@@ -47,5 +47,5 @@ Be insightful. Speak directly to the user’s future.
       statusCode: 500,
       body: JSON.stringify({ error: error.message }),
     };
-  }
+  )
 };
