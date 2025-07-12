@@ -1,0 +1,8 @@
+{
+  "name": "potsplit-functions",
+  "version": "1.0.0",
+  "description": "Serverless functions for PotSplit Destiny Generator",
+  "dependencies": {
+    "openai": "^4.0.0"
+  }
+}
