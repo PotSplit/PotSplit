@@ -132,42 +132,71 @@
           <button type="submit">Generate Blueprint</button>
         </div>
       </form>
-      <div id="result" class="result" style="display:none;"></div>
+     <div id="result" class="result" style="display:none;"></div>
+
+<div class="cta" id="pdfBtn" style="display:none;">
+  <button onclick="downloadPDF()">Download as PDF</button>
+</div>
+
+<div class="cta" id="premiumCTA" style="display:none;">
+  <button onclick="window.location.href='/premium.html'">Unlock Full Blueprint ✨</button>
+</div>
+
     </section>
   </main>
   <footer>
     &copy; 2025 PotSplit.com. All rights reserved.
   </footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  const form = document.getElementById('destinyForm');
+  const result = document.getElementById('result');
+  const pdfBtn = document.getElementById('pdfBtn');
+  const premiumCTA = document.getElementById('premiumCTA');
 
-  <script>
-    const form = document.getElementById('destinyForm');
-    const result = document.getElementById('result');
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
+    const goal = document.getElementById('goal').value;
+    const timeframe = document.getElementById('timeframe').value;
+    const style = document.getElementById('style').value;
 
-      const goal = document.getElementById('goal').value;
-      const timeframe = document.getElementById('timeframe').value;
-      const style = document.getElementById('style').value;
+    result.innerHTML = "<p>🔄 Generating your Destiny Blueprint...</p>";
+    result.style.display = 'block';
+    pdfBtn.style.display = 'none';
+    premiumCTA.style.display = 'none';
 
-      const blueprint = `
-        <h3>Your Destiny Blueprint:</h3>
-        <p><strong>Goal:</strong> ${goal}</p>
-        <p><strong>Time Commitment:</strong> ${timeframe}</p>
-        <p><strong>Growth Style:</strong> ${style}</p>
-        <p><strong>Next Steps:</strong></p>
-        <ol>
-          <li>Break your goal into 3 milestones and set a target date for each.</li>
-          <li>Allocate weekly tasks that align with your available time.</li>
-          <li>Review your progress every 7 days and adjust if needed.</li>
-          <li>Reward yourself for completing each milestone with something meaningful.</li>
-        </ol>
-        <p>This is just the beginning. A full AI-generated Destiny Blueprint will be available soon with dynamic content and tracking.</p>
-      `;
+    try {
+      const res = await fetch("/.netlify/functions/generate-blueprint", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goal, timeframe, style }),
+      });
 
-      result.innerHTML = blueprint;
-      result.style.display = 'block';
-    });
-  </script>
+      const data = await res.json();
+
+      if (data.blueprint) {
+        result.innerHTML = `<h3>Your Destiny Blueprint:</h3><p>${data.blueprint.replace(/\n/g, '<br>')}</p>`;
+        pdfBtn.style.display = 'block';
+        premiumCTA.style.display = 'block';
+      } else {
+        result.innerHTML = "<p>⚠️ Failed to generate blueprint. Please try again.</p>";
+      }
+    } catch (err) {
+      result.innerHTML = `<p>⚠️ Error: ${err.message}</p>`;
+    }
+  });
+
+  async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const blueprintText = result.innerText;
+    const lines = doc.splitTextToSize(blueprintText, 180);
+    doc.text(lines, 10, 20);
+    doc.save("Destiny-Blueprint.pdf");
+  }
+</script>
+
+ 
 </body>
 </html>
