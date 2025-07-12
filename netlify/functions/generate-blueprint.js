@@ -1,3 +1,5 @@
+// File: netlify/functions/generate-blueprint.js
+
 const { Configuration, OpenAIApi } = require("openai");
 
 const configuration = new Configuration({
@@ -13,7 +15,7 @@ exports.handler = async function (event) {
 You are Destiny, an AI destiny architect.
 Craft a personalized Destiny Blueprint for someone with the following inputs:
 
-- 🎯 Goal: ${goal}
+- ✨ Goal: ${goal}
 - ⏳ Time commitment: ${timeframe}
 - 🌱 Growth style: ${style}
 
@@ -24,7 +26,7 @@ Instructions:
 4. End with a short, emotionally powerful Call to Action.
 5. Make it motivating, visual, and practical.
 
-Output format: Clean markdown-like bullets or numbered steps, no code blocks.
+Output format: Clean markdown-style bullets or numbered steps, no code blocks.
 
 Be insightful. Speak directly to the user’s future.
 `;
@@ -43,9 +45,10 @@ Be insightful. Speak directly to the user’s future.
       body: JSON.stringify({ blueprint }),
     };
   } catch (error) {
+    console.error("Blueprint generation failed:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.message }),
     };
-  )
+  }
 };
