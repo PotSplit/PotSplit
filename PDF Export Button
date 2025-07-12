@@ -1,3 +1,0 @@
-<div class="cta" id="pdfBtn" style="display:none;">
-  <button onclick="downloadPDF()">Download as PDF</button>
-</div>
