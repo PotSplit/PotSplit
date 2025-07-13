@@ -1,6 +1,6 @@
 // File: netlify/functions/generate-blueprint.js
 
-import OpenAI from "openai";
+import { OpenAI } from 'openai';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -30,21 +30,21 @@ Output format: Clean markdown-style bullets or numbered steps, no code blocks.
 Be insightful. Speak directly to the user’s future.
 `;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
       temperature: 0.85,
       max_tokens: 1000,
     });
 
-    const blueprint = completion.choices[0].message.content;
+    const blueprint = response.choices[0].message.content;
 
     return {
       statusCode: 200,
       body: JSON.stringify({ blueprint }),
     };
   } catch (error) {
-    console.error("Blueprint generation failed:", error);
+    console.error('Blueprint generation failed:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.message }),
