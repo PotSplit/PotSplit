@@ -1,10 +1,12 @@
-const OpenAI = require("openai");
+// File: netlify/functions/generate-blueprint.js
+
+import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-exports.handler = async function (event) {
+export async function handler(event) {
   try {
     const { goal, timeframe, style } = JSON.parse(event.body);
 
@@ -29,7 +31,7 @@ Be insightful. Speak directly to the user’s future.
 `;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.85,
       max_tokens: 1000,
@@ -48,4 +50,4 @@ Be insightful. Speak directly to the user’s future.
       body: JSON.stringify({ error: error.message }),
     };
   }
-};
+}
