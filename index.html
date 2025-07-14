@@ -2,201 +2,194 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PotSplit | Your Potential, Multiplied</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PotSplit | Unlock the Internet’s Best Kept Secrets</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
   <style>
+    /* Reset and base styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
-      background: #0d0d0d;
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: #0e0e0e;
+      color: #eee;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
+    a {
+      color: #00ffd1;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    a:hover, a:focus {
+      color: #ff00ea;
+      outline: none;
+    }
+
     header {
-      width: 100%;
-      padding: 2rem;
-      background: #111111;
-      border-bottom: 1px solid #1f1f1f;
+      padding: 3rem 1rem 2rem;
       text-align: center;
+      background: linear-gradient(90deg, #00ffd1, #ff00ea);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
     header h1 {
-      font-size: 2.5rem;
+      font-weight: 800;
+      font-size: 3rem;
       margin: 0;
-      color: #00ffd1;
     }
     header p {
+      color: #bbb;
+      font-size: 1.2rem;
       margin-top: 0.5rem;
-      font-size: 1.1rem;
-      color: #cccccc;
+      font-weight: 600;
     }
+
     main {
-      max-width: 800px;
-      padding: 3rem 1rem;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 1rem 4rem;
     }
+
+    .hero {
+      background: #181818;
+      border-radius: 14px;
+      padding: 2rem 2.5rem;
+      margin: 2rem auto 4rem;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,255,209,0.25);
+    }
+    .hero h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #00ffd1;
+      font-weight: 700;
+    }
+    .hero p {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      color: #ccc;
+    }
+    .btn-primary {
+      display: inline-block;
+      background: #00ffd1;
+      color: #000;
+      padding: 1rem 2.5rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      box-shadow: 0 0 10px #00ffd1aa;
+      user-select: none;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .btn-primary:hover,
+    .btn-primary:focus {
+      background: #00c2a1;
+      box-shadow: 0 0 15px #00c2a1cc;
+      outline: none;
+    }
+
     section {
       margin-bottom: 3rem;
     }
-    h2 {
+    section h3 {
+      font-weight: 700;
       font-size: 1.8rem;
+      margin-bottom: 1.25rem;
+      color: #eee;
+      border-bottom: 2px solid #00ffd1;
+      padding-bottom: 0.25rem;
+      max-width: max-content;
+    }
+    ul.features-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.features-list li {
+      background: #1a1a1a;
+      border-radius: 12px;
       margin-bottom: 1rem;
-      color: #ffffff;
-    }
-    p {
-      font-size: 1rem;
-      line-height: 1.6;
-      color: #bbbbbb;
-    }
-    .cta {
-      text-align: center;
-      margin-top: 2rem;
-    }
-    .cta a, button {
-      display: inline-block;
-      background: #00ffd1;
-      color: #000000;
-      padding: 1rem 2rem;
-      border: none;
-      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      box-shadow: inset 0 0 8px #00ffd1aa;
       font-weight: 600;
-      text-decoration: none;
-      transition: background 0.3s;
-      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
-    .cta a:hover, button:hover {
-      background: #00c2a1;
+    ul.features-list li span.icon {
+      font-size: 1.5rem;
+      display: inline-block;
+      width: 1.8rem;
+      text-align: center;
+      color: #00ffd1;
     }
-    input, textarea {
-      width: 100%;
-      padding: 0.8rem;
-      border: none;
-      border-radius: 6px;
-      margin-top: 0.5rem;
-      margin-bottom: 1rem;
-      font-size: 1rem;
-      background: #1a1a1a;
-      color: #ffffff;
-    }
-    .result {
-      margin-top: 2rem;
-      background: #1a1a1a;
-      padding: 2rem;
-      border-radius: 10px;
-    }
+
     footer {
       text-align: center;
+      padding: 2rem 1rem;
+      color: #555;
       font-size: 0.9rem;
-      color: #666;
-      padding: 2rem;
-      border-top: 1px solid #1f1f1f;
+      border-top: 1px solid #222;
+      user-select: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 2.2rem;
+      }
+      .hero h2 {
+        font-size: 1.6rem;
+      }
+      .btn-primary {
+        width: 100%;
+        padding: 1rem 0;
+      }
     }
   </style>
 </head>
 <body>
+
   <header>
     <h1>PotSplit</h1>
-    <p>Your Potential, Multiplied.</p>
+    <p>Unlock the Internet’s Best Kept Secrets</p>
   </header>
+
   <main>
-    <section>
-      <h2>🔮 What is PotSplit?</h2>
-      <p>
-        PotSplit is an automated AI-powered platform that helps you unlock and multiply your potential. 
-        Set a big life goal, and our system will generate a personalized Destiny Blueprint: a custom roadmap split into actionable micro-steps designed to transform your future.
-      </p>
+    <section class="hero" aria-label="Featured Drop">
+      <h2>This Week’s Drop: “The Invisible Book Club” 📖</h2>
+      <p>A mysterious digital novel that changes every time you read it. Hidden messages. Secret chapters. A riddle worth solving. Are you in?</p>
+      <a href="/drops/invisible-book.html" class="btn-primary" role="button">Access the Drop</a>
     </section>
-    <section>
-      <h2>🧠 How It Works</h2>
-      <p>
-        1. Tell us your dream, ambition, or challenge.<br>
-        2. PotSplit AI creates a step-by-step Destiny Blueprint tailored to your exact path.<br>
-        3. You follow your personalized plan — complete micro-steps, track progress, and evolve.<br>
-        4. Your potential multiplies. You grow. You win.
-      </p>
+
+    <section aria-label="Why People Love PotSplit">
+      <h3>🔥 Why People Love PotSplit</h3>
+      <ul class="features-list">
+        <li><span class="icon">🔓</span> Mystery content drops every week — you never know what you’ll unlock</li>
+        <li><span class="icon">🧠</span> Curated ebooks, art, tools, and experiences from indie creators</li>
+        <li><span class="icon">💸</span> Premium content with built-in profit sharing for supporters</li>
+        <li><span class="icon">🎉</span> Viral community challenges to unlock exclusive content</li>
+      </ul>
     </section>
-    <section>
-      <h2>✨ Generate Your Destiny Blueprint</h2>
-      <form id="destinyForm">
-        <label for="goal">What’s your biggest life goal right now?</label>
-        <input type="text" id="goal" name="goal" required placeholder="e.g., Start a business, Write a novel, Get in shape">
 
-        <label for="timeframe">How much time do you want to invest each week?</label>
-        <input type="text" id="timeframe" name="timeframe" required placeholder="e.g., 5 hours, 30 minutes a day">
-
-        <label for="style">What’s your preferred growth style?</label>
-        <textarea id="style" name="style" rows="3" placeholder="e.g., Fast-paced, Gentle and steady, Visual learner, Accountability-focused"></textarea>
-
-        <div class="cta">
-          <button type="submit">Generate Blueprint</button>
-        </div>
-      </form>
-     <div id="result" class="result" style="display:none;"></div>
-
-<div class="cta" id="pdfBtn" style="display:none;">
-  <button onclick="downloadPDF()">Download as PDF</button>
-</div>
-
-<div class="cta" id="premiumCTA" style="display:none;">
-  <button onclick="window.location.href='/premium.html'">Unlock Full Blueprint ✨</button>
-</div>
-
+    <section aria-label="Upcoming Drops">
+      <h3>📦 Featured Drops</h3>
+      <p>Discover digital secrets, evolving stories, and limited-access content released by the PotSplit Archive.</p>
+      <ul class="features-list">
+        <li><a href="/drops/invisible-book.html">🔍 The Invisible Book Club</a> — A surreal story that changes each time you return.</li>
+        <!-- Future drops go here as list items -->
+      </ul>
     </section>
   </main>
+
   <footer>
-    &copy; 2025 PotSplit.com. All rights reserved.
+    &copy; 2025 PotSplit.com — All rights reserved.
   </footer>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-  const form = document.getElementById('destinyForm');
-  const result = document.getElementById('result');
-  const pdfBtn = document.getElementById('pdfBtn');
-  const premiumCTA = document.getElementById('premiumCTA');
 
-  form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const goal = document.getElementById('goal').value;
-    const timeframe = document.getElementById('timeframe').value;
-    const style = document.getElementById('style').value;
-
-    result.innerHTML = "<p>🔄 Generating your Destiny Blueprint...</p>";
-    result.style.display = 'block';
-    pdfBtn.style.display = 'none';
-    premiumCTA.style.display = 'none';
-
-    try {
-      const res = await fetch("/.netlify/functions/generate-blueprint", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ goal, timeframe, style }),
-      });
-
-      const data = await res.json();
-
-      if (data.blueprint) {
-        result.innerHTML = `<h3>Your Destiny Blueprint:</h3><p>${data.blueprint.replace(/\n/g, '<br>')}</p>`;
-        pdfBtn.style.display = 'block';
-        premiumCTA.style.display = 'block';
-      } else {
-        result.innerHTML = "<p>⚠️ Failed to generate blueprint. Please try again.</p>";
-      }
-    } catch (err) {
-      result.innerHTML = `<p>⚠️ Error: ${err.message}</p>`;
-    }
-  });
-
-  async function downloadPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const blueprintText = result.innerText;
-    const lines = doc.splitTextToSize(blueprintText, 180);
-    doc.text(lines, 10, 20);
-    doc.save("Destiny-Blueprint.pdf");
-  }
-</script>
-
- 
 </body>
 </html>
