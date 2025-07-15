@@ -2,125 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PotSplit | Unlock the Internet’s Best Kept Secrets</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <title>The Forbidden Vault | PotSplit</title>
   <style>
     body {
-      margin: 0;
+      background: #000;
+      color: #00ffd1;
       font-family: 'Inter', sans-serif;
-      background: #0e0e0e;
-      color: #ffffff;
-    }
-    header {
+      padding: 3rem 1rem;
+      max-width: 800px;
+      margin: auto;
       text-align: center;
-      padding: 3rem 1rem 1rem;
     }
-    header h1 {
+    h1 {
       font-size: 3rem;
-      margin: 0;
-      background: linear-gradient(90deg, #00ffd1, #ff00ea);
+      background: linear-gradient(90deg, #ff00ea, #00ffd1);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-    }
-    header p {
-      color: #bbbbbb;
-      margin-top: 0.5rem;
-      font-size: 1.1rem;
-    }
-    .hero {
-      text-align: center;
-      margin: 3rem auto;
-      padding: 2rem;
-      background: #1a1a1a;
-      border-radius: 12px;
-      max-width: 700px;
-    }
-    .hero h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #00ffd1;
-    }
-    .hero p {
-      font-size: 1.1rem;
       margin-bottom: 2rem;
     }
-    .cta-btn {
-      display: inline-block;
+    p {
+      font-size: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    input[type="text"] {
+      padding: 0.8rem;
+      width: 60%;
+      max-width: 300px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
       background: #00ffd1;
       color: #000;
-      padding: 1rem 2rem;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      font-weight: bold;
       border-radius: 8px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: background 0.3s ease;
+      margin-left: 1rem;
+      cursor: pointer;
     }
-    .cta-btn:hover {
-      background: #00c2a1;
-    }
-    section {
-      padding: 2rem 1rem;
-      max-width: 900px;
-      margin: auto;
-    }
-    section h3 {
-      font-size: 1.6rem;
-      margin-bottom: 1rem;
-      color: #ffffff;
-    }
-    section ul {
-      list-style: none;
-      padding: 0;
-    }
-    section li {
-      background: #1a1a1a;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      border-radius: 8px;
-    }
-    footer {
-      text-align: center;
-      padding: 2rem 1rem;
+    .hint {
+      color: #888;
       font-size: 0.9rem;
-      color: #666;
-      border-top: 1px solid #1f1f1f;
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>PotSplit</h1>
-    <p>Unlock the Internet’s Best Kept Secrets</p>
-  </header>
+  <h1>🧬 The Forbidden Vault</h1>
+  <p>This vault contains anomalies. Stories that shouldn’t exist. Files recovered from corrupted timelines.</p>
+  <p>Enter the access phrase to unlock a chamber:</p>
 
-  <div class="hero">
-    <h2>This Week’s Drop: “The Invisible Book Club” 📖</h2>
-    <p>A mysterious digital novel that changes every time you read it. Hidden messages. Secret chapters. A riddle worth solving. Are you in?</p>
-    <a href="/drops/invisible-book.html" class="cta-btn">Access the Drop</a>
-  </div>
+  <input id="codeInput" type="text" placeholder="Enter secret code..." />
+  <button onclick="checkCode()">Unlock</button>
 
-  <section>
-    <h3>🔥 Why People Love PotSplit</h3>
-    <ul>
-      <li>🔓 Mystery content drops every week — you never know what you’ll unlock</li>
-      <li>🧠 Curated ebooks, art, tools, and experiences from indie creators</li>
-      <li>💸 <strong>Premium content with exclusive perks for paid members</strong></li>
-      <li>🎉 Viral community challenges to unlock exclusive content</li>
-    </ul>
-  </section>
+  <p class="hint">Hint: Try “blacksentence”</p>
 
-  <section>
-    <h2>📦 Featured Drops</h2>
-    <p>Discover digital secrets, evolving stories, and limited-access content released by the PotSplit Archive.</p>
-    <ul>
-      <li><a href="/drops/invisible-book.html">🔍 The Invisible Book Club</a> — A surreal story that changes when you return.</li>
-    </ul>
-  </section>
-
-  <footer>
-    &copy; 2025 PotSplit.com — All rights reserved.
-  </footer>
+  <script>
+    function checkCode() {
+      const code = document.getElementById("codeInput").value.trim().toLowerCase();
+      if (code === "blacksentence") {
+        window.location.href = "/vault/black-sentence.html";
+      } else {
+        alert("⚠️ Access denied. The vault resists you.");
+      }
+    }
+  </script>
 
 </body>
 </html>
