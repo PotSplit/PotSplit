@@ -2,154 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PotSplit | Unlock the Internet’s Best Kept Secrets</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    /* Reset and base styles */
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
       background: #0e0e0e;
-      color: #eee;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      color: #ffffff;
     }
-    a {
-      color: #00ffd1;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-    a:hover, a:focus {
-      color: #ff00ea;
-      outline: none;
-    }
-
     header {
-      padding: 3rem 1rem 2rem;
       text-align: center;
+      padding: 3rem 1rem 1rem;
+    }
+    header h1 {
+      font-size: 3rem;
+      margin: 0;
       background: linear-gradient(90deg, #00ffd1, #ff00ea);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    header h1 {
-      font-weight: 800;
-      font-size: 3rem;
-      margin: 0;
-    }
     header p {
-      color: #bbb;
-      font-size: 1.2rem;
+      color: #bbbbbb;
       margin-top: 0.5rem;
-      font-weight: 600;
+      font-size: 1.1rem;
     }
-
-    main {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 0 1rem 4rem;
-    }
-
     .hero {
-      background: #181818;
-      border-radius: 14px;
-      padding: 2rem 2.5rem;
-      margin: 2rem auto 4rem;
       text-align: center;
-      box-shadow: 0 0 20px rgba(0,255,209,0.25);
+      margin: 3rem auto;
+      padding: 2rem;
+      background: #1a1a1a;
+      border-radius: 12px;
+      max-width: 700px;
     }
     .hero h2 {
       font-size: 2rem;
       margin-bottom: 1rem;
       color: #00ffd1;
-      font-weight: 700;
     }
     .hero p {
       font-size: 1.1rem;
       margin-bottom: 2rem;
-      color: #ccc;
     }
-    .btn-primary {
+    .cta-btn {
       display: inline-block;
       background: #00ffd1;
       color: #000;
-      padding: 1rem 2.5rem;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      cursor: pointer;
-      box-shadow: 0 0 10px #00ffd1aa;
-      user-select: none;
-      transition: background 0.3s ease, box-shadow 0.3s ease;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.3s ease;
     }
-    .btn-primary:hover,
-    .btn-primary:focus {
+    .cta-btn:hover {
       background: #00c2a1;
-      box-shadow: 0 0 15px #00c2a1cc;
-      outline: none;
     }
-
     section {
-      margin-bottom: 3rem;
+      padding: 2rem 1rem;
+      max-width: 900px;
+      margin: auto;
     }
     section h3 {
-      font-weight: 700;
-      font-size: 1.8rem;
-      margin-bottom: 1.25rem;
-      color: #eee;
-      border-bottom: 2px solid #00ffd1;
-      padding-bottom: 0.25rem;
-      max-width: max-content;
-    }
-    ul.features-list {
-      list-style: none;
-      padding-left: 0;
-    }
-    ul.features-list li {
-      background: #1a1a1a;
-      border-radius: 12px;
+      font-size: 1.6rem;
       margin-bottom: 1rem;
-      padding: 1rem 1.5rem;
-      box-shadow: inset 0 0 8px #00ffd1aa;
-      font-weight: 600;
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
+      color: #ffffff;
     }
-    ul.features-list li span.icon {
-      font-size: 1.5rem;
-      display: inline-block;
-      width: 1.8rem;
-      text-align: center;
-      color: #00ffd1;
+    section ul {
+      list-style: none;
+      padding: 0;
     }
-
+    section li {
+      background: #1a1a1a;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+    }
     footer {
       text-align: center;
       padding: 2rem 1rem;
-      color: #555;
       font-size: 0.9rem;
-      border-top: 1px solid #222;
-      user-select: none;
-    }
-
-    /* Responsive */
-    @media (max-width: 600px) {
-      header h1 {
-        font-size: 2.2rem;
-      }
-      .hero h2 {
-        font-size: 1.6rem;
-      }
-      .btn-primary {
-        width: 100%;
-        padding: 1rem 0;
-      }
+      color: #666;
+      border-top: 1px solid #1f1f1f;
     }
   </style>
 </head>
@@ -160,32 +94,29 @@
     <p>Unlock the Internet’s Best Kept Secrets</p>
   </header>
 
-  <main>
-    <section class="hero" aria-label="Featured Drop">
-      <h2>This Week’s Drop: “The Invisible Book Club” 📖</h2>
-      <p>A mysterious digital novel that changes every time you read it. Hidden messages. Secret chapters. A riddle worth solving. Are you in?</p>
-      <a href="/drops/invisible-book.html" class="btn-primary" role="button">Access the Drop</a>
-    </section>
+  <div class="hero">
+    <h2>This Week’s Drop: “The Invisible Book Club” 📖</h2>
+    <p>A mysterious digital novel that changes every time you read it. Hidden messages. Secret chapters. A riddle worth solving. Are you in?</p>
+    <a href="/drops/invisible-book.html" class="cta-btn">Access the Drop</a>
+  </div>
 
-    <section aria-label="Why People Love PotSplit">
-      <h3>🔥 Why People Love PotSplit</h3>
-      <ul class="features-list">
-        <li><span class="icon">🔓</span> Mystery content drops every week — you never know what you’ll unlock</li>
-        <li><span class="icon">🧠</span> Curated ebooks, art, tools, and experiences from indie creators</li>
-        <li><span class="icon">💸</span> Premium content with built-in profit sharing for supporters</li>
-        <li><span class="icon">🎉</span> Viral community challenges to unlock exclusive content</li>
-      </ul>
-    </section>
+  <section>
+    <h3>🔥 Why People Love PotSplit</h3>
+    <ul>
+      <li>🔓 Mystery content drops every week — you never know what you’ll unlock</li>
+      <li>🧠 Curated ebooks, art, tools, and experiences from indie creators</li>
+      <li>💸 <strong>Premium content with exclusive perks for paid members</strong></li>
+      <li>🎉 Viral community challenges to unlock exclusive content</li>
+    </ul>
+  </section>
 
-    <section aria-label="Upcoming Drops">
-      <h3>📦 Featured Drops</h3>
-      <p>Discover digital secrets, evolving stories, and limited-access content released by the PotSplit Archive.</p>
-      <ul class="features-list">
-        <li><a href="/drops/invisible-book.html">🔍 The Invisible Book Club</a> — A surreal story that changes each time you return.</li>
-        <!-- Future drops go here as list items -->
-      </ul>
-    </section>
-  </main>
+  <section>
+    <h2>📦 Featured Drops</h2>
+    <p>Discover digital secrets, evolving stories, and limited-access content released by the PotSplit Archive.</p>
+    <ul>
+      <li><a href="/drops/invisible-book.html">🔍 The Invisible Book Club</a> — A surreal story that changes when you return.</li>
+    </ul>
+  </section>
 
   <footer>
     &copy; 2025 PotSplit.com — All rights reserved.
