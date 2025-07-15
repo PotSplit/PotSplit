@@ -1,12 +1,4 @@
 {
-  "name": "potsplit-functions",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "index.js",
-  "scripts": {
-    "start": "netlify dev"
-  },
-  "dependencies": {
-    "openai": "^4.9.0"
-  }
+  "name": "potsplit",
+  "version": "1.0.0"
 }
