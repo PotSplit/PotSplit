@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,3 +74,80 @@
 
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>The Forbidden Vault | PotSplit</title>
+  <style>
+    body {
+      background: #000;
+      color: #00ffd1;
+      font-family: 'Inter', sans-serif;
+      padding: 3rem 1rem;
+      max-width: 800px;
+      margin: auto;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3rem;
+      background: linear-gradient(90deg, #ff00ea, #00ffd1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 2rem;
+    }
+    p {
+      font-size: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    input[type="text"] {
+      padding: 0.8rem;
+      width: 60%;
+      max-width: 300px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      background: #00ffd1;
+      color: #000;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      font-weight: bold;
+      border-radius: 8px;
+      margin-left: 1rem;
+      cursor: pointer;
+    }
+    .hint {
+      color: #888;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧬 The Forbidden Vault</h1>
+  <p>This vault contains anomalies. Stories that shouldn’t exist. Files recovered from corrupted timelines.</p>
+  <p>Enter the access phrase to unlock a chamber:</p>
+
+  <input id="codeInput" type="text" placeholder="Enter secret code..." />
+  <button onclick="checkCode()">Unlock</button>
+
+  <p class="hint">Hint: Try “blacksentence”</p>
+
+  <script>
+    function checkCode() {
+      const code = document.getElementById("codeInput").value.trim().toLowerCase();
+      if (code === "blacksentence") {
+        window.location.href = "/vault/black-sentence.html";
+      } else {
+        alert("⚠️ Access denied. The vault resists you.");
+      }
+    }
+  </script>
+
+</body>
+</html>
+>>>>>>> 2f2005f (📦 Update site files for production)
