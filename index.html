@@ -67,9 +67,26 @@
       font-weight: 600;
       text-decoration: none;
       transition: transform 0.3s ease;
+      margin-right: 10px;
     }
     .cta-btn:hover {
       transform: scale(1.05);
+    }
+    .drop-link {
+      display: inline-block;
+      padding: 10px 18px;
+      background: #00e0ff;
+      color: #000;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0,224,255,0.5);
+      transition: all 0.3s ease;
+    }
+    .drop-link:hover {
+      background: #0088aa;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(0,224,255,0.8);
     }
     section {
       padding: 2rem 1rem;
@@ -109,29 +126,6 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
-      <style>
-  /* existing styles here... */
-
-  .drop-link {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 10px 18px;
-    background: #00e0ff;
-    color: #000;
-    font-weight: bold;
-    text-decoration: none;
-    border-radius: 6px;
-    box-shadow: 0 0 10px rgba(0,224,255,0.5);
-    transition: all 0.3s ease;
-  }
-
-  .drop-link:hover {
-    background: #0088aa;
-    color: #fff;
-    box-shadow: 0 0 20px rgba(0,224,255,0.8);
-  }
-</style>
-
     }
   </style>
 </head>
@@ -150,7 +144,7 @@
     <h2>This Week’s Drop: “The Invisible Book Club” 📖</h2>
     <p>A mysterious digital novel that changes every time you read it. Hidden messages. Secret chapters. A riddle worth solving. Are you in?</p>
     <a href="/drops/invisible-book.html" class="cta-btn">Access the Drop</a>
-    <a href="viewer/index.html" class="drop-link">🔮 Open VFX Viewer</a>
+    <a href="/viewer/index.html" class="drop-link">🔮 Open VFX Viewer</a>
   </div>
 
   <section>
