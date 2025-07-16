@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PotSplit Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f9f9f9;
+      color: #111;
+    }
+    header {
+      background: #fff;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-weight: 800;
+      font-size: 1.5rem;
+    }
+    nav a {
+      margin-left: 1.5rem;
+      text-decoration: none;
+      color: #444;
+      font-weight: 600;
+    }
+    nav a:hover {
+      color: #000;
+    }
+    main {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 2rem;
+    }
+    .product {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .product h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      color: #222;
+    }
+    .product p {
+      font-size: 0.95rem;
+      color: #555;
+      flex-grow: 1;
+    }
+    .product button,
+    .product .coming-soon {
+      margin-top: 1rem;
+      padding: 0.6rem 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .product button {
+      background: #00ffd1;
+      color: #000;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .product button:hover {
+      background: #00ccb1;
+    }
+    .coming-soon {
+      background: #eee;
+      color: #aaa;
+      cursor: not-allowed;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.85rem;
+      color: #777;
+      border-top: 1px solid #eee;
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🛒 PotSplit Shop</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/vault">Vault</a>
+      <a href="/drops/invisible-book.html">Drops</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Featured Products</h2>
+    <div class="grid">
+
+      <div class="product">
+        <h3>📦 Mystery Drop Box (Weekly)</h3>
+        <p>A surprise digital experience delivered every Friday. Includes secret files, lore, and interactive content.</p>
+        <button onclick="window.location.href='https://buy.stripe.com/test_samplelink'">Buy Now – $7</button>
+      </div>
+
+      <div class="product">
+        <h3>📖 The Invisible Book (Premium Edition)</h3>
+        <p>The interactive story that rewrites itself with each read. Includes bonus scenes and the original PDF.</p>
+        <button onclick="window.location.href='https://buy.stripe.com/test_samplelink2'">Buy Now – $5</button>
+      </div>
+
+      <div class="product">
+        <h3>🧠 AI Story Pack Vol. 1</h3>
+        <p>Ten short stories generated from mythic seeds and reader submissions. Includes printable versions.</p>
+        <div class="coming-soon">Coming Soon</div>
+      </div>
+
+      <div class="product">
+        <h3>🕯️ The Phantom Archive – Deluxe</h3>
+        <p>Unlock encrypted lore documents and abandoned web fragments from PotSplit's earliest drops.</p>
+        <div class="coming-soon">Coming Soon</div>
+      </div>
+
+      <div class="product">
+        <h3>🎮 Mini Mystery Game: “Dreamheat Protocol”</h3>
+        <p>Play the first official PotSplit browser puzzle. Solve riddles, decode messages, unlock bonuses.</p>
+        <div class="coming-soon">Coming Soon</div>
+      </div>
+
+      <div class="product">
+        <h3>🎨 VFX Viewer Toolkit</h3>
+        <p>Get access to the custom HTML/CSS VFX viewer files used to display surreal stories on PotSplit.</p>
+        <button onclick="window.location.href='https://buy.stripe.com/test_samplelink3'">Buy Now – $9</button>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 PotSplit — All rights reserved.
+  </footer>
+
+</body>
+</html>
