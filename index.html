@@ -132,28 +132,6 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
-      .carousel {
-  overflow: hidden;
-  margin: 2rem 0;
-}
-.carousel-track {
-  display: flex;
-  animation: scroll 20s linear infinite;
-}
-.carousel-item {
-  flex: 0 0 auto;
-  min-width: 250px;
-  background: #111;
-  color: #00ffd1;
-  margin-right: 1rem;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 0 10px #00ffd1;
-}
-@keyframes scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
-}
     }
   </style>
 </head>
@@ -195,18 +173,6 @@
       <li><a href="/drops/the-black-sentence.html">✒️ The Black Sentence</a> — A cursed phrase with the power to rewrite reality.</li>
     </ul>
   </section>
-  
-<section>
-  <h3>🕰️ Drop History</h3>
-  <div class="carousel">
-    <div class="carousel-track">
-      <div class="carousel-item">📘 Drop #1: The Invisible Book Club</div>
-      <div class="carousel-item">📜 Drop #2: The Phantom Archive</div>
-      <div class="carousel-item">🖋️ Drop #3: The Black Sentence</div>
-      <!-- Add more drops as needed -->
-    </div>
-  </div>
-</section>
 
   <footer>
     <div class="social-links">
@@ -249,12 +215,9 @@
     function updateCountdown() {
       const now = new Date();
       const diff = targetDate - now;
-     if (diff <= 0) {
-  document.getElementById('countdown').textContent = '✅ New Drop Now Live!';
-  showCelebration();
-  notifyUser();
-  return;
-}
+      if (diff <= 0) {
+        document.getElementById('countdown').textContent = '✅ New Drop Now Live!';
+        return;
       }
       const hours = String(Math.floor(diff / (1000 * 60 * 60) % 24)).padStart(2, '0');
       const minutes = String(Math.floor(diff / (1000 * 60) % 60)).padStart(2, '0');
@@ -266,22 +229,6 @@
       const audio = document.getElementById('bg-music');
       audio.muted = !audio.muted;
     }
-<script>
-  function notifyUser() {
-    if (Notification.permission === 'granted') {
-      new Notification("📦 New PotSplit Drop!", {
-        body: "The newest mystery drop is now live. Click to explore!",
-        icon: "/favicon.ico"
-      });
-    } else if (Notification.permission !== 'denied') {
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-          notifyUser();
-        }
-      });
-    }
-  }
-</script>
 
     setInterval(updateCountdown, 1000);
     updateCountdown();
