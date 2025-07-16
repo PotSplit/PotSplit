@@ -94,6 +94,11 @@
       color: #ff00ea;
       font-weight: bold;
     }
+    .glass-mode .hero, .glass-mode section li {
+      background: rgba(255, 255, 255, 0.05) !important;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 20px rgba(0,255,255,0.2);
+    }
     section {
       padding: 2rem 1rem;
       max-width: 900px;
@@ -140,6 +145,7 @@
   </style>
 </head>
 <body>
+  <button onclick="toggleGlass()" style="position:fixed;bottom:1rem;left:1rem;z-index:1000;">🪞 Glass Mode</button>
   <header>
     <h1>PotSplit</h1>
     <nav>
@@ -158,6 +164,20 @@
     <a href="/drops/invisible-book.html" class="cta-btn">Access the Drop</a>
     <a href="viewer/index.html" class="drop-link">🔮 Open VFX Viewer</a>
   </div>
+
+  <section>
+    <h3>📈 Drop Unlock Progress</h3>
+    <p>We're <strong>87%</strong> of the way to unlocking the next secret drop!</p>
+    <div style="background:#222;border-radius:10px;overflow:hidden;">
+      <div style="width:87%;background:#00ffd1;height:12px;"></div>
+    </div>
+  </section>
+
+  <section>
+    <h3>🧩 Weekly Riddle</h3>
+    <button onclick="revealClue()" style="padding:0.5rem 1rem;">Reveal Clue</button>
+    <p id="clue-text" style="margin-top:1rem;opacity:0.6;"></p>
+  </section>
 
   <section>
     <h3>🔥 Why People Love PotSplit</h3>
@@ -179,14 +199,6 @@
     </ul>
   </section>
 
-  <section>
-    <h3>🛒 Featured Product</h3>
-    <ul>
-      <li><strong>PotSplit Hoodie</strong> — Cozy, black, and encrypted in vibes. <em class="product-coming-soon">Coming Soon</em></li>
-      <li><strong>Limited Edition Zine</strong> — The weirdest thoughts we’ve ever printed. <em class="product-coming-soon">Coming Soon</em></li>
-    </ul>
-  </section>
-
   <footer>
     <div class="social-links">
       <a href="#" title="Follow us on X (Twitter)">X</a>
@@ -196,28 +208,20 @@
     <p>&copy; 2025 PotSplit.com — All rights reserved.</p>
   </footer>
 
-  <audio id="bg-music" loop autoplay muted>
-    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_356763bb36.mp3" type="audio/mp3">
-  </audio>
-  <button onclick="toggleMusic()" style="position:fixed;bottom:1rem;right:1rem;z-index:1000;">🎵</button>
-
-  <div id="tsparticles"></div>
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
   <script>
-    tsParticles.load("tsparticles", {
-      fullScreen: { enable: true, zIndex: -1 },
-      particles: {
-        number: { value: 30 },
-        color: { value: "#00ffd1" },
-        shape: { type: "circle" },
-        opacity: { value: 0.3 },
-        size: { value: 2 },
-        move: { enable: true, speed: 1, direction: "none", outModes: "bounce" }
-      }
-    });
-  </script>
+    function toggleGlass() {
+      document.body.classList.toggle('glass-mode');
+    }
 
-  <script>
+    function revealClue() {
+      const clues = [
+        "It hides behind the letter that never sleeps.",
+        "Only the forgotten remember the key.",
+        "This file cannot be found—unless you know where to look."
+      ];
+      document.getElementById('clue-text').textContent = clues[Math.floor(Math.random() * clues.length)];
+    }
+
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + (5 - targetDate.getDay() + 7) % 7);
     targetDate.setHours(20, 0, 0, 0);
@@ -235,36 +239,8 @@
       document.getElementById('countdown').textContent = `Next Drop In: ${hours}:${minutes}:${seconds}`;
     }
 
-    function toggleMusic() {
-      const audio = document.getElementById('bg-music');
-      audio.muted = !audio.muted;
-    }
-
     setInterval(updateCountdown, 1000);
     updateCountdown();
-  </script>
-
-  <canvas id="fireworks" style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:999;"></canvas>
-  <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2/dist/fireworks.js"></script>
-  <script>
-    const container = document.getElementById('fireworks');
-    const fireworks = new Fireworks(container, {
-      hue: { min: 180, max: 360 },
-      acceleration: 1.05,
-      friction: 0.97,
-      gravity: 1.5,
-      particles: 80,
-      trace: 3,
-      delay: { min: 10, max: 25 },
-      autoresize: true,
-      brightness: { min: 50, max: 80 },
-      decay: { min: 0.015, max: 0.03 },
-      boundaries: { top: 50, bottom: container.clientHeight, left: 50, right: container.clientWidth }
-    });
-    function showCelebration() {
-      fireworks.start();
-      setTimeout(() => fireworks.stop(), 8000);
-    }
   </script>
 </body>
 </html>
