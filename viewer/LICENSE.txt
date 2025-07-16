@@ -1,0 +1,1 @@
+This product includes open-source software licensed under MIT and Apache 2.0 licenses.
