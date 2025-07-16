@@ -8,7 +8,6 @@
   <style>
     * {
       box-sizing: border-box;
-      cursor: url('https://cur.cursors-4u.net/cursors/cur-13/cur1163.cur'), auto;
     }
     body {
       margin: 0;
@@ -88,17 +87,6 @@
       color: #fff;
       box-shadow: 0 0 20px rgba(0,224,255,0.8);
     }
-    #countdown {
-      margin-top: 1rem;
-      font-size: 1.2rem;
-      color: #ff00ea;
-      font-weight: bold;
-    }
-    .glass-mode .hero, .glass-mode section li {
-      background: rgba(255, 255, 255, 0.05) !important;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 0 20px rgba(0,255,255,0.2);
-    }
     section {
       padding: 2rem 1rem;
       max-width: 900px;
@@ -117,10 +105,6 @@
       margin-bottom: 1rem;
       padding: 1rem;
       border-radius: 8px;
-    }
-    .product-coming-soon {
-      opacity: 0.5;
-      font-style: italic;
     }
     footer {
       text-align: center;
@@ -145,7 +129,6 @@
   </style>
 </head>
 <body>
-  <button onclick="toggleGlass()" style="position:fixed;bottom:1rem;left:1rem;z-index:1000;">🪞 Glass Mode</button>
   <header>
     <h1>PotSplit</h1>
     <nav>
@@ -160,24 +143,9 @@
   <div class="hero">
     <h2>This Week’s Drop: “The Invisible Book Club” 📖</h2>
     <p>A mysterious digital novel that changes every time you read it. Hidden messages. Secret chapters. A riddle worth solving. Are you in?</p>
-    <div id="countdown">Loading countdown...</div>
     <a href="/drops/invisible-book.html" class="cta-btn">Access the Drop</a>
-    <a href="viewer/index.html" class="drop-link">🔮 Open VFX Viewer</a>
+    <a href="/viewer/index.html" class="drop-link">🔮 Launch AeonSight Viewer</a>
   </div>
-
-  <section>
-    <h3>📈 Drop Unlock Progress</h3>
-    <p>We're <strong>87%</strong> of the way to unlocking the next secret drop!</p>
-    <div style="background:#222;border-radius:10px;overflow:hidden;">
-      <div style="width:87%;background:#00ffd1;height:12px;"></div>
-    </div>
-  </section>
-
-  <section>
-    <h3>🧩 Weekly Riddle</h3>
-    <button onclick="revealClue()" style="padding:0.5rem 1rem;">Reveal Clue</button>
-    <p id="clue-text" style="margin-top:1rem;opacity:0.6;"></p>
-  </section>
 
   <section>
     <h3>🔥 Why People Love PotSplit</h3>
@@ -207,40 +175,5 @@
     </div>
     <p>&copy; 2025 PotSplit.com — All rights reserved.</p>
   </footer>
-
-  <script>
-    function toggleGlass() {
-      document.body.classList.toggle('glass-mode');
-    }
-
-    function revealClue() {
-      const clues = [
-        "It hides behind the letter that never sleeps.",
-        "Only the forgotten remember the key.",
-        "This file cannot be found—unless you know where to look."
-      ];
-      document.getElementById('clue-text').textContent = clues[Math.floor(Math.random() * clues.length)];
-    }
-
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + (5 - targetDate.getDay() + 7) % 7);
-    targetDate.setHours(20, 0, 0, 0);
-
-    function updateCountdown() {
-      const now = new Date();
-      const diff = targetDate - now;
-      if (diff <= 0) {
-        document.getElementById('countdown').textContent = '✅ New Drop Now Live!';
-        return;
-      }
-      const hours = String(Math.floor(diff / (1000 * 60 * 60) % 24)).padStart(2, '0');
-      const minutes = String(Math.floor(diff / (1000 * 60) % 60)).padStart(2, '0');
-      const seconds = String(Math.floor(diff / 1000 % 60)).padStart(2, '0');
-      document.getElementById('countdown').textContent = `Next Drop In: ${hours}:${minutes}:${seconds}`;
-    }
-
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
-  </script>
 </body>
 </html>
