@@ -65,6 +65,11 @@
       border-radius: 10px;
       padding: 1.5rem;
       margin-bottom: 2rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .product:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 15px rgba(0,255,209,0.2);
     }
     .product h3 {
       margin-top: 0;
@@ -86,10 +91,16 @@
       border-radius: 6px;
       font-weight: bold;
       text-decoration: none;
-      transition: background 0.3s;
+      transition: background 0.3s, transform 0.3s;
     }
     .buy-button:hover {
       background: #00c6aa;
+      transform: scale(1.05);
+    }
+    .preview {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #aaa;
     }
     footer {
       text-align: center;
@@ -123,6 +134,7 @@
       <h3>Advanced VFX Reading Viewer</h3>
       <p>A sleek, animated way to read evolving digital content. Unlock hidden transitions and immersive styles.</p>
       <a href="/viewer/index.html" class="buy-button">Try Now</a>
+      <div class="preview">💡 Preview available in demo mode.</div>
     </div>
 
     <div class="product">
