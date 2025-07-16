@@ -183,8 +183,31 @@
     <p>&copy; 2025 PotSplit.com — All rights reserved.</p>
   </footer>
 
+  <!-- 🎧 Ambient Music Toggle -->
+  <audio id="bg-music" loop autoplay muted>
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_356763bb36.mp3" type="audio/mp3">
+  </audio>
+  <button onclick="toggleMusic()" style="position:fixed;bottom:1rem;right:1rem;z-index:1000;">🎵</button>
+
+  <!-- 🔮 Particle Background -->
+  <div id="tsparticles"></div>
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
   <script>
-    // Set target date/time for next drop (e.g., next Friday 8PM)
+    tsParticles.load("tsparticles", {
+      fullScreen: { enable: true, zIndex: -1 },
+      particles: {
+        number: { value: 30 },
+        color: { value: "#00ffd1" },
+        shape: { type: "circle" },
+        opacity: { value: 0.3 },
+        size: { value: 2 },
+        move: { enable: true, speed: 1, direction: "none", outModes: "bounce" }
+      }
+    });
+  </script>
+
+  <!-- ⏳ Countdown Timer -->
+  <script>
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + (5 - targetDate.getDay() + 7) % 7); // Friday
     targetDate.setHours(20, 0, 0, 0); // 8:00 PM
@@ -192,17 +215,19 @@
     function updateCountdown() {
       const now = new Date();
       const diff = targetDate - now;
-
       if (diff <= 0) {
         document.getElementById('countdown').textContent = '✅ New Drop Now Live!';
         return;
       }
-
       const hours = String(Math.floor(diff / (1000 * 60 * 60) % 24)).padStart(2, '0');
       const minutes = String(Math.floor(diff / (1000 * 60) % 60)).padStart(2, '0');
       const seconds = String(Math.floor(diff / 1000 % 60)).padStart(2, '0');
-
       document.getElementById('countdown').textContent = `Next Drop In: ${hours}:${minutes}:${seconds}`;
+    }
+
+    function toggleMusic() {
+      const audio = document.getElementById('bg-music');
+      audio.muted = !audio.muted;
     }
 
     setInterval(updateCountdown, 1000);
