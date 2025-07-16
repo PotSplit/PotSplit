@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PotSplit | Shop</title>
+  <title>PotSplit Shop</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     * {
@@ -15,6 +15,7 @@
       font-family: 'Inter', sans-serif;
       background: #0e0e0e;
       color: #ffffff;
+      transition: all 0.3s ease;
     }
     header {
       padding: 1rem 2rem;
@@ -44,34 +45,62 @@
     nav a:hover {
       color: #00ffd1;
     }
-    main {
-      max-width: 900px;
+    .shop-container {
+      max-width: 1000px;
       margin: 3rem auto;
       padding: 2rem;
       background: #1a1a1a;
       border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 255, 209, 0.1);
+      animation: fadeIn 1s ease-out;
     }
-    h2 {
-      text-align: center;
+    .shop-container h2 {
+      font-size: 2rem;
       color: #00ffd1;
+      text-align: center;
     }
     .product {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
       border: 1px solid #333;
       border-radius: 10px;
-      padding: 1rem;
-      margin: 1rem 0;
-      background: #121212;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
     }
     .product h3 {
-      margin: 0 0 0.5rem 0;
+      margin-top: 0;
+      font-size: 1.4rem;
     }
     .product p {
-      color: #bbb;
+      margin-bottom: 0.5rem;
     }
     .coming-soon {
+      opacity: 0.5;
       font-style: italic;
-      opacity: 0.6;
+    }
+    .buy-button {
+      display: inline-block;
+      margin-top: 1rem;
+      background: #00ffd1;
+      color: #000;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: bold;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .buy-button:hover {
+      background: #00c6aa;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.9rem;
+      color: #666;
+      border-top: 1px solid #1f1f1f;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -87,38 +116,36 @@
     </nav>
   </header>
 
-<section>
-  <h3>📚 Featured Digital Products</h3>
-  <ul>
-    <li>
-      <strong>The Invisible Book Club (Deluxe PDF)</strong> — A surreal, shifting ebook with secret layers. 
-      <em class="product-coming-soon">Coming Soon</em>
-    </li>
-    <li>
-      <strong>VFX Reading Viewer (Standalone App)</strong> — A visually immersive reader for experimental web fiction.
-      <em class="product-coming-soon">Coming Soon</em>
-    </li>
-    <li>
-      <strong>Encrypted Drop Decoder</strong> — A tool to unlock layered puzzles hidden in PotSplit archives.
-      <em class="product-coming-soon">Coming Soon</em>
-    </li>
-  </ul>
-</section>
+  <div class="shop-container">
+    <h2>🛍️ Digital Product Shop</h2>
 
-  <div id="tsparticles"></div>
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
-  <script>
-    tsParticles.load("tsparticles", {
-      fullScreen: { enable: true, zIndex: -1 },
-      particles: {
-        number: { value: 20 },
-        color: { value: "#00ffd1" },
-        shape: { type: "circle" },
-        opacity: { value: 0.2 },
-        size: { value: 2 },
-        move: { enable: true, speed: 1, direction: "none", outModes: "bounce" }
-      }
-    });
-  </script>
+    <div class="product">
+      <h3>Advanced VFX Reading Viewer</h3>
+      <p>A sleek, animated way to read evolving digital content. Unlock hidden transitions and immersive styles.</p>
+      <a href="/viewer/index.html" class="buy-button">Try Now</a>
+    </div>
+
+    <div class="product">
+      <h3>Exclusive eBook Bundle Vol. I</h3>
+      <p>Includes: “The Black Sentence,” “Invisible Book Club,” and unreleased lore.</p>
+      <p class="coming-soon">Coming Soon</p>
+    </div>
+
+    <div class="product">
+      <h3>Encrypted Drop Decoder</h3>
+      <p>Use this tool to reveal alternate content inside secret files.</p>
+      <p class="coming-soon">Coming Soon</p>
+    </div>
+
+    <div class="product">
+      <h3>PotSplit Premium Membership (Beta)</h3>
+      <p>Early access to future drops, exclusive materials, and interactive puzzles.</p>
+      <p class="coming-soon">Coming Soon</p>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 PotSplit.com — All rights reserved.</p>
+  </footer>
 </body>
 </html>
