@@ -1,75 +1,80 @@
 body {
   margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: radial-gradient(circle at center, #0d0d0d 0%, #000000 100%);
-  color: #e0e0ff;
-  overflow: hidden;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  font-family: 'Inter', sans-serif;
+  background: #0e0e0e;
+  color: #fff;
+  transition: 0.3s ease;
 }
 
-.vfx-container {
-  position: relative;
-  width: 90%;
-  max-width: 800px;
-  height: 500px;
-  background: rgba(20, 20, 30, 0.85);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 40px rgba(0, 200, 255, 0.3);
-  border-radius: 12px;
-  overflow: hidden;
-  z-index: 2;
-}
-
-.reader-frame {
-  padding: 40px;
-  overflow-y: auto;
-  max-height: 100%;
-}
-
-.vfx-title {
-  font-size: 28px;
-  color: #9be7ff;
+header {
   text-align: center;
-  margin-bottom: 20px;
+  padding: 2rem 1rem;
+  background: #111;
+  border-bottom: 1px solid #333;
 }
 
-.vfx-page p {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 16px;
+.viewer-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+button {
+  background: #00ffd1;
+  color: #000;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+button:hover {
+  background: #00c6aa;
+}
+
+#reader-container {
+  padding: 1rem;
+  max-width: 1000px;
+  margin: auto;
   position: relative;
-  animation: flicker 4s infinite alternate;
+  overflow: auto;
 }
 
-.glow {
+#epub-reader {
+  height: 80vh;
+  display: none;
+}
+
+#pdf-canvas {
+  display: none;
+  max-width: 100%;
+  border: 1px solid #333;
+}
+
+.overlay-text {
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(0,255,255,0.1) 0%, transparent 70%);
-  animation: moveGlow 20s linear infinite;
-  z-index: 1;
+  top: 30%;
+  left: 10%;
+  right: 10%;
+  padding: 2rem;
+  background: rgba(0, 255, 209, 0.15);
+  color: #00ffd1;
+  font-weight: bold;
+  font-size: 1.5rem;
+  border: 2px dashed #00ffd1;
+  text-align: center;
+  z-index: 10;
 }
 
-@keyframes moveGlow {
-  0% {
-    transform: rotate(0deg) translate(0, 0);
-  }
-  100% {
-    transform: rotate(360deg) translate(0, 0);
-  }
+.hidden {
+  display: none;
 }
 
-@keyframes flicker {
-  0% {
-    text-shadow: 0 0 2px #00e0ff, 0 0 4px #00e0ff;
-  }
-  100% {
-    text-shadow: 0 0 8px #00e0ff, 0 0 16px #00e0ff;
-  }
+.dark-mode {
+  background: #000;
+  color: #ddd;
 }
