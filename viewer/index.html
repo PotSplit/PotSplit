@@ -1,91 +1,24 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AeonSight Viewer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="lib/viewer.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header>
-    <h1>🧠 AeonSight Viewer</h1>
-    <p>Explore immersive reading formats with clarity and control.</p>
-  </header>
-
-  <section class="viewer-controls">
-    <button onclick="loadEPUB()">📖 Load EPUB</button>
-    <button onclick="loadPDF()">📄 Load PDF</button>
-    <button onclick="toggleZoom()">🔍 Zoom</button>
-    <button onclick="toggleDark()">🌗 Mode</button>
-    <button onclick="toggleOverlay()">🕵️‍♂️ Secret Text</button>
-  </section>
-
-  <main id="reader-container">
-    <div id="epub-reader"></div>
-    <canvas id="pdf-canvas"></canvas>
-    <div class="overlay-text hidden">🕵️ Hidden Message Revealed!</div>
+  <header><h1>📖 AeonSight Viewer</h1></header>
+  <main>
+    <p>Select a file to read:</p>
+    <input type="file" id="fileInput" accept=".pdf,.epub" />
+    <div id="viewer"></div>
+    <div class="controls">
+      <button onclick="toggleInvisible()">🔍 Toggle Invisible Text</button>
+      <button onclick="toggleZoom()">🔎 Zoom</button>
+      <button onclick="toggleField()">🌀 Field View</button>
+    </div>
   </main>
-
-  <footer>
-    <p>&copy; 2025 PotSplit · AeonSight Viewer · All Rights Reserved</p>
-  </footer>
-
-  <!-- JS LIBRARIES -->
-  <script src="lib/epub.js"></script>
-  <script src="lib/pdf.min.js"></script>
-
-  <script>
-    let isZoomed = false;
-    let isDark = false;
-
-    function loadEPUB() {
-      document.getElementById('pdf-canvas').style.display = 'none';
-      const book = ePub("demo.epub");
-      const rendition = book.renderTo("epub-reader", {
-        width: "100%",
-        height: "100%"
-      });
-      rendition.display();
-      document.getElementById('epub-reader').style.display = 'block';
-    }
-
-    function loadPDF() {
-      document.getElementById('epub-reader').style.display = 'none';
-      const canvas = document.getElementById('pdf-canvas');
-      canvas.style.display = 'block';
-
-      const url = "demo.pdf";
-      pdfjsLib.getDocument(url).promise.then(function(pdfDoc) {
-        pdfDoc.getPage(1).then(function(page) {
-          const context = canvas.getContext('2d');
-          const viewport = page.getViewport({ scale: 1.5 });
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
-
-          const renderContext = {
-            canvasContext: context,
-            viewport: viewport
-          };
-          page.render(renderContext);
-        });
-      });
-    }
-
-    function toggleZoom() {
-      const container = document.getElementById('reader-container');
-      isZoomed = !isZoomed;
-      container.style.transform = isZoomed ? "scale(1.2)" : "scale(1)";
-    }
-
-    function toggleDark() {
-      isDark = !isDark;
-      document.body.classList.toggle('dark-mode');
-    }
-
-    function toggleOverlay() {
-      document.querySelector('.overlay-text').classList.toggle('hidden');
-    }
-  </script>
+  <script src="js/viewer.js"></script>
 </body>
 </html>
