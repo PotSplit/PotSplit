@@ -1,1 +1,33 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AeonSight Viewer Pro</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header>
+    <h1>AeonSight Viewer Pro</h1>
+    <div class="toggles">
+      <label><input type="checkbox" id="editorToggle" /> ✍️ Author Mode</label>
+      <label><input type="checkbox" id="statsToggle" /> 📊 Stats</label>
+      <label><input type="checkbox" id="wakeToggle" /> ⏰ Stay Awake</label>
+    </div>
+  </header>
+  <main id="viewer">
+    <iframe id="epubReader" src="demo.epub" title="EPUB Reader"></iframe>
+  </main>
+  <aside id="statsPanel" class="hidden">
+    <h2>Live Stats</h2>
+    <ul>
+      <li><strong>Word Count:</strong> <span id="wordCount">0</span></li>
+      <li><strong>Read Time:</strong> <span id="readTime">0 min</span></li>
+      <li><strong>Passive Voice:</strong> <span id="passiveVoice">0%</span></li>
+      <li><strong>Reading Level:</strong> <span id="readingLevel">--</span></li>
+    </ul>
+  </aside>
+</body>
+</html>
