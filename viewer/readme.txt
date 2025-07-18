@@ -1,1 +1,0 @@
-AeonSight Viewer Pro - For personal testing only. Includes Reader Mode default, Author tools, wake feature, and live stats.
