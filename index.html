@@ -2,178 +2,335 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PotSplit | Unlock the Internet’s Best Kept Secrets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PotSplit — Stories. Puzzles. Worlds.</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
+    :root{
+      --bg:#0b0c0f;
+      --card:#11131a;
+      --muted:#9aa0aa;
+      --text:#eef2ff;
+      --accent:#00ffd1;
+      --accent-2:#ff4fd8;
+      --glass:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.12);
     }
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: #0e0e0e;
-      color: #ffffff;
-      transition: all 0.3s ease;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 500px at 80% -10%, rgba(255,79,216,.1), transparent 60%),
+        radial-gradient(800px 400px at 10% 10%, rgba(0,255,209,.12), transparent 60%),
+        linear-gradient(180deg,#0b0c10,#090a0d 40%, #0a0b10 100%);
+      overflow-x:hidden;
     }
-    header {
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #1a1a1a;
-      border-bottom: 1px solid #333;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+
+    /* Header / Nav */
+    header{
+      position:sticky;top:0;z-index:50;
+      backdrop-filter:saturate(150%) blur(6px);
+      background:linear-gradient(180deg, rgba(10,10,14,.75), rgba(10,10,14,.35) 70%, transparent);
+      border-bottom:1px solid var(--border);
     }
-    header h1 {
-      margin: 0;
-      font-size: 1.8rem;
-      background: linear-gradient(90deg, #00ffd1, #ff00ea);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .nav{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 0;
     }
-    nav a {
-      margin-left: 1.5rem;
-      text-decoration: none;
-      color: #ccc;
-      font-weight: 600;
-      transition: color 0.3s;
+    .brand{display:flex;gap:10px;align-items:center}
+    .logo{
+      width:32px;height:32px;border-radius:8px;
+      background:conic-gradient(from 180deg, var(--accent), var(--accent-2), var(--accent));
+      box-shadow:0 0 24px rgba(0,255,209,.35), inset 0 0 18px rgba(255,255,255,.12);
     }
-    nav a:hover {
-      color: #00ffd1;
+    .brand span{font-weight:800;letter-spacing:.2px}
+    nav ul{display:flex;gap:18px;list-style:none;margin:0;padding:0}
+    nav a{
+      color:var(--muted);font-weight:600;font-size:.95rem;padding:10px 12px;border-radius:8px;
+      border:1px solid transparent;
     }
-    .hero {
-      text-align: center;
-      margin: 3rem auto;
-      padding: 2rem;
-      background: #1a1a1a;
-      border-radius: 12px;
-      max-width: 700px;
-      animation: fadeIn 1s ease-out;
+    nav a:hover{color:var(--text);border-color:var(--border);background:var(--glass)}
+    .cta{
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:#000;font-weight:800;border:none;border-radius:10px;padding:10px 14px;
+      box-shadow:0 6px 30px rgba(0,255,209,.25);
     }
-    .hero h2 {
-      font-size: 2rem;
-      color: #00ffd1;
+    .cta:hover{filter:brightness(.95)}
+
+    /* Hero */
+    .hero{position:relative;overflow:hidden}
+    .hero .wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:center;padding:56px 20px}
+    .headline{
+      font-size:clamp(28px,5vw,54px);line-height:1.05;font-weight:800;
+      letter-spacing:.2px;margin:0 0 14px;
+      background:linear-gradient(90deg,var(--text),#bfe, #fff);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
     }
-    .cta-btn {
-      display: inline-block;
-      background: #00ffd1;
-      color: #000;
-      padding: 1rem 2rem;
-      border-radius: 8px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: transform 0.3s ease;
+    .sub{color:var(--muted);font-size:1.05rem;margin:0 0 22px}
+    .hero-ctas{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{
+      display:inline-flex;align-items:center;gap:10px;border-radius:12px;
+      padding:12px 16px;border:1px solid var(--border);background:var(--glass);color:var(--text);font-weight:700;
     }
-    .cta-btn:hover {
-      transform: scale(1.05);
+    .btn:hover{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,209,.12) inset}
+    .btn.primary{border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#000}
+    .countdown{
+      display:flex;gap:10px;margin-top:16px;color:var(--muted);font-weight:600
     }
-    .drop-link {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 10px 18px;
-      background: #00e0ff;
-      color: #000;
-      font-weight: bold;
-      text-decoration: none;
-      border-radius: 6px;
-      box-shadow: 0 0 10px rgba(0,224,255,0.5);
-      transition: all 0.3s ease;
+    .orb{
+      position:absolute;inset:auto -120px -140px auto;width:420px;height:420px;border-radius:50%;
+      background:radial-gradient(closest-side, rgba(0,255,209,.45), rgba(0,255,209,0) 70%);
+      filter:blur(14px);animation:float 8s ease-in-out infinite alternate;
     }
-    .drop-link:hover {
-      background: #0088aa;
-      color: #fff;
-      box-shadow: 0 0 20px rgba(0,224,255,0.8);
+    @keyframes float{to{transform:translateY(-18px) translateX(-8px)}}
+    .mock{
+      min-height:320px;border-radius:18px;border:1px solid var(--border);
+      background:
+        radial-gradient(600px 220px at 30% -20%, rgba(255,79,216,.2), transparent 60%),
+        radial-gradient(520px 240px at 100% 0%, rgba(0,255,209,.2), transparent 60%),
+        linear-gradient(180deg, #0f1118, #0c0e14);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.05), 0 20px 80px rgba(0,0,0,.45);
+      display:grid;place-items:center;padding:18px;text-align:center;color:var(--muted)
     }
-    section {
-      padding: 2rem 1rem;
-      max-width: 900px;
-      margin: auto;
+
+    /* Sections */
+    section{padding:36px 0;border-top:1px solid var(--border)}
+    h2{margin:0 0 10px;font-size:clamp(22px,3vw,30px)}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;
+      transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
     }
-    section h3 {
-      font-size: 1.6rem;
-      color: #ffffff;
+    .card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 10px 40px rgba(0,255,209,.08)}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:.78rem;border:1px solid var(--border);color:var(--muted)}
+    .muted{color:var(--muted)}
+    .list{margin:10px 0 0;padding-left:18px;color:var(--muted)}
+    .list li{margin:6px 0}
+
+    /* Ticker */
+    .ticker{
+      display:flex;gap:24px;white-space:nowrap;overflow:hidden;mask-image:linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
     }
-    section ul {
-      list-style: none;
-      padding: 0;
+    .tick{
+      display:inline-flex;gap:8px;align-items:center;padding:10px 14px;margin:8px 0;
+      border-radius:999px;border:1px solid var(--border);background:var(--glass);color:var(--muted);
+      animation:slide 24s linear infinite;
     }
-    section li {
-      background: #1a1a1a;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      border-radius: 8px;
-    }
-    footer {
-      text-align: center;
-      padding: 2rem 1rem;
-      font-size: 0.9rem;
-      color: #666;
-      border-top: 1px solid #1f1f1f;
-    }
-    .social-links a {
-      margin: 0 0.5rem;
-      color: #888;
-      font-size: 1.2rem;
-      transition: color 0.3s ease;
-    }
-    .social-links a:hover {
-      color: #00ffd1;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+    @keyframes slide{to{transform:translateX(-100%)}}
+
+    /* Footer */
+    footer{border-top:1px solid var(--border);padding:28px 0;color:var(--muted);text-align:center}
+
+    /* Responsive */
+    @media (max-width:900px){
+      .hero .wrap{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
+
+  <!-- Header / Nav -->
   <header>
-    <h1>PotSplit</h1>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/drops/invisible-book.html">Drops</a>
-      <a href="/premium.html">Premium</a>
-      <a href="/vault">Vault</a>
-      <a href="/shop/shop.html">Shop 🛒</a>
-    </nav>
+    <div class="wrap nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <span>PotSplit</span>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/vault">Vault</a></li>
+          <li><a href="/viewer/index.html">AeonSight</a></li>
+          <li><a href="/shop/shop.html">Shop</a></li>
+          <li><a class="cta" href="/drops/invisible-book.html">Next Drop</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
-  <div class="hero">
-    <h2>This Week’s Drop: “The Invisible Book Club” 📖</h2>
-    <p>A mysterious digital novel that changes every time you read it. Hidden messages. Secret chapters. A riddle worth solving. Are you in?</p>
-    <a href="/drops/invisible-book.html" class="cta-btn">Access the Drop</a>
-    <a href="/viewer/index.html" class="drop-link">🔮 Launch AeonSight Viewer</a>
-  </div>
-
-  <section>
-    <h3>🔥 Why People Love PotSplit</h3>
-    <ul>
-      <li>🔓 Mystery content drops every week — you never know what you’ll unlock</li>
-      <li>🧠 Curated ebooks, art, tools, and experiences from indie creators</li>
-      <li>💸 Premium content with exclusive perks for paid members</li>
-      <li>🎉 Viral community challenges to unlock exclusive content</li>
-    </ul>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <h1 class="headline">Stories. Puzzles. Worlds.<br/>Unlock the Next Drop.</h1>
+        <p class="sub">A living archive of mystery content, evolving books, and immersive tools. Experience reading with AeonSight — our next‑gen viewer.</p>
+        <div class="hero-ctas">
+          <a class="btn primary" href="/viewer/index.html">🚀 Launch AeonSight</a>
+          <a class="btn" href="/vault">🔐 Explore Vault</a>
+          <a class="btn" href="/shop/shop.html">🛒 Visit Digital Shop</a>
+        </div>
+        <div class="countdown" id="countdown">
+          <span>Next drop in:</span>
+          <span id="dd">00</span>d
+          <span id="hh">00</span>h
+          <span id="mm">00</span>m
+          <span id="ss">00</span>s
+        </div>
+      </div>
+      <div class="mock">
+        <div>
+          <div style="font-weight:800;margin-bottom:8px;color:#c8ffef">AeonSight 3.0 Preview</div>
+          <div class="muted">EPUB / PDF / TXT • Reader Mode • Invisible Ink • Sleep Alert</div>
+        </div>
+      </div>
+    </div>
+    <div class="orb" aria-hidden="true"></div>
   </section>
 
+  <!-- AeonSight Showcase -->
   <section>
-    <h3>📦 Featured Drops</h3>
-    <p>Discover digital secrets, evolving stories, and limited-access content released by the PotSplit Archive.</p>
-    <ul>
-      <li><a href="/drops/invisible-book.html">🔍 The Invisible Book Club</a> — A surreal story that changes each time you return.</li>
-      <li><a href="/drops/phantom-archive.html">🕯️ The Phantom Archive</a> — Hidden lore from an abandoned web experiment.</li>
-      <li><a href="/drops/the-black-sentence.html">✒️ The Black Sentence</a> — A cursed phrase with the power to rewrite reality.</li>
-    </ul>
+    <div class="wrap">
+      <h2>AeonSight — Reading, Reimagined</h2>
+      <p class="muted">A cinematic viewer with focus mode, stats, author tools, and subtle VFX. Free demo on web, Pro coming soon.</p>
+      <div class="grid" style="margin-top:12px">
+        <div class="card">
+          <span class="pill">Formats</span>
+          <h3>EPUB • PDF • TXT • HTML</h3>
+          <ul class="list">
+            <li>Reader Mode (default) with typography controls</li>
+            <li>Mobile‑first & desktop‑perfect</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="pill">Immersion</span>
+          <h3>Invisible Ink & Ambient FX</h3>
+          <ul class="list">
+            <li>Reveal hidden passages with a gadget switch</li>
+            <li>Subtle gradients & particle light — zero distractions</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="pill">Focus</span>
+          <h3>Sleep Alert & Mini Stats</h3>
+          <ul class="list">
+            <li>Page timer with gentle wake chime</li>
+            <li>Words/min, time read, page progress</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <a class="btn primary" href="/viewer/index.html">Try the Demo</a>
+        <a class="btn" href="/premium.html">Get Notified for Pro</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vault Preview -->
+  <section>
+    <div class="wrap">
+      <h2>The Vault — Drops & Lore</h2>
+      <p class="muted">Unlock evolving stories, artifacts, and web experiments. New items appear weekly.</p>
+      <div class="grid" style="margin-top:12px">
+        <a class="card" href="/drops/invisible-book.html">
+          <span class="pill">Featured</span>
+          <h3>The Invisible Book Club</h3>
+          <p class="muted">A surreal text that shifts when you return.</p>
+        </a>
+        <a class="card" href="/drops/phantom-archive.html">
+          <span class="pill">Mystery</span>
+          <h3>The Phantom Archive</h3>
+          <p class="muted">Fragments from an abandoned experiment.</p>
+        </a>
+        <a class="card" href="/drops/the-black-sentence.html">
+          <span class="pill">Lore</span>
+          <h3>The Black Sentence</h3>
+          <p class="muted">A phrase rumored to rewrite reality.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shop Preview -->
+  <section>
+    <div class="wrap">
+      <h2>Shop — Digital & Original</h2>
+      <p class="muted">Premium tools, ebooks, and event passes. Always a free tier.</p>
+      <div class="grid" style="margin-top:12px">
+        <a class="card" href="/shop/shop.html">
+          <span class="pill">Tool</span>
+          <h3>AeonSight Pro (Coming Soon)</h3>
+          <p class="muted">Uploads, conversions, annotations, themes.</p>
+        </a>
+        <a class="card" href="/shop/shop.html">
+          <span class="pill">Bundle</span>
+          <h3>Ebook Bundle Vol. I</h3>
+          <p class="muted">Exclusive stories + behind‑the‑scenes notes.</p>
+        </a>
+        <a class="card" href="/shop/shop.html">
+          <span class="pill">Events</span>
+          <h3>Puzzle Trail Pass</h3>
+          <p class="muted">Timed hunt with secret unlocks & prizes.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Ticker -->
+  <section>
+    <div class="wrap">
+      <div class="ticker" id="ticker">
+        <div class="tick"><span class="dot"></span> New unlock: “Echo Room // 03”</div>
+        <div class="tick"><span class="dot"></span> Top solver: @cipherbird (00:41)</div>
+        <div class="tick"><span class="dot"></span> AeonSight Pro — waitlist open</div>
+        <div class="tick"><span class="dot"></span> Drop countdown running…</div>
+        <div class="tick"><span class="dot"></span> Vault updated 2h ago</div>
+      </div>
+    </div>
   </section>
 
   <footer>
-    <div class="social-links">
-      <a href="#" title="Follow us on X (Twitter)">X</a>
-      <a href="#" title="Follow us on Instagram">Instagram</a>
-      <a href="#" title="Follow us on TikTok">TikTok</a>
+    <div class="wrap">
+      <div style="margin-bottom:8px">© <span id="year"></span> PotSplit.com — All rights reserved.</div>
+      <div><a href="/premium.html" class="muted">Membership</a> • <a href="/vault" class="muted">Vault</a> • <a href="/viewer/index.html" class="muted">AeonSight</a> • <a href="/shop/shop.html" class="muted">Shop</a></div>
     </div>
-    <p>&copy; 2025 PotSplit.com — All rights reserved.</p>
   </footer>
+
+  <script>
+    // Live year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Countdown to next Friday 6pm UTC
+    (function(){
+      const dd=document.getElementById('dd'),hh=document.getElementById('hh'),
+            mm=document.getElementById('mm'),ss=document.getElementById('ss');
+      function nextFridaySixUTC(){
+        const n=new Date(); const d=n.getUTCDay();
+        let add=((5 - d) + 7) % 7; if(add===0 && n.getUTCHours()>=18) add=7;
+        const t=new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()+add, 18,0,0));
+        return t;
+      }
+      let target=nextFridaySixUTC();
+      setInterval(()=>{
+        const now=new Date();
+        let diff=target-now;
+        if(diff<=0){ target=nextFridaySixUTC(); diff=target-now; }
+        const s=Math.floor(diff/1000)%60;
+        const m=Math.floor(diff/1000/60)%60;
+        const h=Math.floor(diff/1000/60/60)%24;
+        const d=Math.floor(diff/1000/60/60/24);
+        dd.textContent=String(d).padStart(2,'0');
+        hh.textContent=String(h).padStart(2,'0');
+        mm.textContent=String(m).padStart(2,'0');
+        ss.textContent=String(s).padStart(2,'0');
+      },1000);
+    })();
+
+    // Progressive enhancement: soft fade-in on scroll
+    const io=new IntersectionObserver((entries)=>{
+      for(const e of entries){
+        if(e.isIntersecting){ e.target.style.transition="opacity .6s ease, transform .6s ease"; e.target.style.opacity=1; e.target.style.transform="none"; }
+      }
+    },{threshold:.1});
+    document.querySelectorAll('section .wrap > .grid, .ticker, .mock').forEach(el=>{
+      el.style.opacity=.001; el.style.transform="translateY(12px)"; io.observe(el);
+    });
+  </script>
 </body>
 </html>
