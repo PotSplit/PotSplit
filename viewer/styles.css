@@ -1,0 +1,113 @@
+:root{
+  --bg:#0b0c10;
+  --panel:#10131a;
+  --glass:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.12);
+  --muted:#a0a6b3;
+  --text:#eef2ff;
+  --accent:#00ffd1;
+  --accent2:#ff4fd8;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(1000px 500px at 90% -10%, rgba(255,79,216,.12), transparent 60%),
+    radial-gradient(800px 400px at 10% 10%, rgba(0,255,209,.12), transparent 60%),
+    linear-gradient(180deg,#0b0c10,#090a0d 40%, #0a0b10 100%);
+}
+a{color:inherit;text-decoration:none}
+.hidden{display:none!important}
+
+/* Header */
+.as-header{
+  position:sticky;top:0;z-index:30;
+  backdrop-filter:saturate(150%) blur(8px);
+  background:linear-gradient(180deg, rgba(10,10,14,.75), rgba(10,10,14,.35) 70%, transparent);
+  border-bottom:1px solid var(--border);
+}
+.as-header .as-brand{
+  display:flex;gap:10px;align-items:center; padding:14px 20px;
+}
+.as-header .as-brand .as-logo{
+  width:28px;height:28px;border-radius:8px;
+  background:conic-gradient(from 180deg,var(--accent),var(--accent2),var(--accent));
+  box-shadow:0 0 24px rgba(0,255,209,.35), inset 0 0 18px rgba(255,255,255,.12);
+}
+.as-header .as-brand strong{letter-spacing:.2px}
+.as-header .as-brand em{color:var(--muted);font-style:normal;font-size:.9rem}
+.as-nav{margin-left:auto; padding:14px 20px}
+.as-nav a{color:var(--muted);font-weight:600;margin-left:14px;padding:8px 10px;border-radius:8px;border:1px solid transparent}
+.as-nav a:hover{color:var(--text);border-color:var(--border);background:var(--glass)}
+
+/* Shell */
+.as-shell{max-width:1200px;margin:20px auto;padding:0 20px}
+
+/* Toolbar */
+.as-toolbar{
+  display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+  border:1px solid var(--border);border-radius:14px;padding:10px; background:var(--panel);
+}
+.as-group{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.as-btn, .as-file span{
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  color:#000;border:none;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer
+}
+.as-btn:hover{filter:brightness(.95)}
+.as-file{position:relative;overflow:hidden}
+.as-file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.as-select{background:var(--glass);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+.as-select.small{padding:6px 8px}
+.as-switch{display:flex;gap:6px;align-items:center;color:var(--muted);font-weight:700}
+
+/* Drop zone */
+.as-drop{
+  margin:14px 0; padding:26px; text-align:center;
+  border:1px dashed var(--border); border-radius:14px; color:var(--muted);
+  background:rgba(255,255,255,.03);
+}
+
+/* Panels */
+.as-panels{
+  display:grid;grid-template-columns:1fr;gap:14px
+}
+.as-pane{
+  border:1px solid var(--border);border-radius:14px; background:var(--panel);padding:0; min-height:60vh; position:relative;
+}
+.as-epub{height:70vh}
+#pdfCanvas{width:100%; height:auto; display:block; margin:0 auto}
+.as-pdf-meta{position:absolute;bottom:10px;right:12px;color:var(--muted);font-size:.9rem; background:var(--glass);border:1px solid var(--border);padding:6px 10px;border-radius:8px}
+
+/* Reader text */
+.as-reader{
+  padding:28px; line-height:1.7; font-size:1.08rem; max-width:70ch; margin:0 auto;
+}
+.as-reader.narrow{max-width:55ch}
+.as-reader.wide{max-width:90ch}
+.as-reader.serif{font-family:Georgia,'Times New Roman',serif}
+.as-reader.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace}
+
+/* Stats */
+.as-stats{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:8px;
+  border:1px solid var(--border);border-radius:14px;padding:12px;margin:14px 0;background:var(--panel);
+  color:var(--muted);font-size:.95rem
+}
+@media (max-width:900px){.as-stats{grid-template-columns:repeat(2,1fr)}}
+
+/* Invisible ink overlay */
+.as-ink{
+  pointer-events:none; position:fixed; inset:0; z-index:5; opacity:.8;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.75), rgba(0,0,0,.75) 14px, transparent 14px, transparent 28px),
+    linear-gradient(180deg, rgba(0,0,0,.2), transparent 40%, rgba(0,0,0,.2));
+}
+
+/* Themes */
+.theme-dark body{}
+.theme-sepia .as-reader{background:#fbf1d3;color:#2e2a23}
+.theme-light body{background:#f7f8fc;color:#111}
+.theme-night body{background:#050507}
