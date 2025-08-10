@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AeonSight Viewer — PotSplit</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <!-- EPUB.js -->
+  <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3/dist/epub.min.js"></script>
+  <!-- PDF.js (core + worker) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.js"></script>
+  <script>
+    // point the worker to the CDN
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js";
+  </script>
+</head>
+<body>
+  <header class="as-header">
+    <div class="as-brand">
+      <span class="as-logo"></span>
+      <strong>AeonSight</strong>
+      <em>by PotSplit</em>
+    </div>
+    <nav class="as-nav">
+      <a href="/">Home</a>
+      <a href="/shop/shop.html">Shop</a>
+      <a href="/vault">Vault</a>
+    </nav>
+  </header>
+
+  <main class="as-shell">
+    <!-- Controls -->
+    <section class="as-toolbar">
+      <div class="as-group">
+        <label class="as-file">
+          <input id="fileInput" type="file" accept=".epub,.pdf,.txt,.html,.htm" />
+          <span>📂 Open File</span>
+        </label>
+        <button id="loadDemo" class="as-btn" title="Load a tiny built-in sample">✨ Demo Text</button>
+      </div>
+
+      <div class="as-group">
+        <button id="prevBtn" class="as-btn" title="Previous page/chapter">⟵</button>
+        <button id="nextBtn" class="as-btn" title="Next page/chapter">⟶</button>
+        <button id="zoomOut" class="as-btn" title="Zoom out">−</button>
+        <button id="zoomIn" class="as-btn" title="Zoom in">＋</button>
+        <select id="themeSelect" class="as-select" title="Theme">
+          <option value="dark" selected>Dark</option>
+          <option value="sepia">Sepia</option>
+          <option value="light">Light</option>
+          <option value="night">Night</option>
+        </select>
+        <select id="fontSelect" class="as-select" title="Font">
+          <option value="system" selected>System</option>
+          <option value="serif">Serif</option>
+          <option value="mono">Mono</option>
+        </select>
+        <select id="widthSelect" class="as-select" title="Field of view">
+          <option value="narrow">Narrow</option>
+          <option value="normal" selected>Normal</option>
+          <option value="wide">Wide</option>
+        </select>
+      </div>
+
+      <div class="as-group">
+        <label class="as-switch" title="Reader / Editor (TXT/HTML only)">
+          <input id="modeToggle" type="checkbox">
+          <span>Editor Mode</span>
+        </label>
+        <label class="as-switch" title="Invisible ink overlay">
+          <input id="invisibleToggle" type="checkbox">
+          <span>Invisible Ink</span>
+        </label>
+        <label class="as-switch" title="Idle alert (minutes)">
+          ⏱ Idle:
+          <select id="idleMinutes" class="as-select small">
+            <option value="0">Off</option>
+            <option value="5">5m</option>
+            <option value="10" selected>10m</option>
+            <option value="15">15m</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <!-- Drag/drop zone -->
+    <section id="dropZone" class="as-drop">
+      <p>Drag & drop EPUB / PDF / TXT / HTML here…</p>
+    </section>
+
+    <!-- Reader/Editor panes -->
+    <section class="as-panels">
+      <!-- EPUB container -->
+      <div id="epubContainer" class="as-pane hidden">
+        <div id="epubArea" class="as-epub"></div>
+      </div>
+
+      <!-- PDF canvas -->
+      <div id="pdfContainer" class="as-pane hidden">
+        <canvas id="pdfCanvas"></canvas>
+        <div class="as-pdf-meta">
+          <span id="pdfPage">—</span> / <span id="pdfTotal">—</span>
+        </div>
+      </div>
+
+      <!-- Text/HTML -->
+      <div id="textContainer" class="as-pane">
+        <article id="reader" class="as-reader" contenteditable="false"></article>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="as-stats">
+      <div><strong>Mode:</strong> <span id="modeLabel">Reader</span></div>
+      <div><strong>Type:</strong> <span id="fileType">Text</span></div>
+      <div><strong>Words:</strong> <span id="wordCount">0</span></div>
+      <div><strong>Elapsed:</strong> <span id="elapsed">00:00:00</span></div>
+      <div><strong>Speed:</strong> <span id="wpm">—</span> wpm</div>
+      <div id="epubStat" class="hidden"><strong>EPUB:</strong> <span id="epubWhere">—</span></div>
+    </section>
+  </main>
+
+  <!-- Invisible ink overlay -->
+  <div id="inkOverlay" class="as-ink hidden" aria-hidden="true"></div>
+
+  <script src="./aeonsight.js"></script>
+</body>
+</html>
