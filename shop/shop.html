@@ -2,162 +2,200 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PotSplit Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PotSplit — Shop</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-      cursor: url('https://cur.cursors-4u.net/cursors/cur-13/cur1163.cur'), auto;
+    :root{
+      --bg:#0b0c0f;
+      --card:#11131a;
+      --muted:#9aa0aa;
+      --text:#eef2ff;
+      --accent:#00ffd1;
+      --accent-2:#ff4fd8;
+      --glass:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.12);
     }
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: #0e0e0e;
-      color: #ffffff;
-      transition: all 0.3s ease;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 500px at 80% -10%, rgba(255,79,216,.1), transparent 60%),
+        radial-gradient(800px 400px at 10% 10%, rgba(0,255,209,.12), transparent 60%),
+        linear-gradient(180deg,#0b0c10,#090a0d 40%, #0a0b10 100%);
+      overflow-x:hidden;
     }
-    header {
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #1a1a1a;
-      border-bottom: 1px solid #333;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+
+    /* Header */
+    header{
+      position:sticky;top:0;z-index:50;
+      backdrop-filter:saturate(150%) blur(6px);
+      background:linear-gradient(180deg, rgba(10,10,14,.75), rgba(10,10,14,.35) 70%, transparent);
+      border-bottom:1px solid var(--border);
     }
-    header h1 {
-      margin: 0;
-      font-size: 1.8rem;
-      background: linear-gradient(90deg, #00ffd1, #ff00ea);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;gap:10px;align-items:center}
+    .logo{width:32px;height:32px;border-radius:8px;background:conic-gradient(from 180deg,var(--accent),var(--accent-2),var(--accent));box-shadow:0 0 24px rgba(0,255,209,.35), inset 0 0 18px rgba(255,255,255,.12)}
+    .brand span{font-weight:800;letter-spacing:.2px}
+    nav ul{display:flex;gap:18px;list-style:none;margin:0;padding:0}
+    nav a{color:var(--muted);font-weight:600;font-size:.95rem;padding:10px 12px;border-radius:8px;border:1px solid transparent}
+    nav a:hover{color:var(--text);border-color:var(--border);background:var(--glass)}
+    .cta{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#000;font-weight:800;border:none;border-radius:10px;padding:10px 14px;box-shadow:0 6px 30px rgba(0,255,209,.25)}
+    .cta:hover{filter:brightness(.95)}
+
+    /* Hero */
+    .hero{padding:44px 0 10px}
+    .hero h1{margin:0 0 6px;font-size:clamp(28px,5vw,46px);letter-spacing:.2px}
+    .muted{color:var(--muted)}
+
+    /* Filters */
+    .filters{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 24px}
+    .chip{border:1px solid var(--border);background:var(--glass);padding:8px 12px;border-radius:999px;color:var(--muted);font-weight:600;cursor:pointer}
+    .chip.active{border-color:var(--accent);color:#000;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+
+    /* Grid */
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:16px 0 44px}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;
+      transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+      display:flex;flex-direction:column;gap:10px;min-height:220px
     }
-    nav a {
-      margin-left: 1.5rem;
-      text-decoration: none;
-      color: #ccc;
-      font-weight: 600;
-      transition: color 0.3s;
-    }
-    nav a:hover {
-      color: #00ffd1;
-    }
-    .shop-container {
-      max-width: 1000px;
-      margin: 3rem auto;
-      padding: 2rem;
-      background: #1a1a1a;
-      border-radius: 12px;
-      animation: fadeIn 1s ease-out;
-    }
-    .shop-container h2 {
-      font-size: 2rem;
-      color: #00ffd1;
-      text-align: center;
-    }
-    .product {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(8px);
-      border: 1px solid #333;
-      border-radius: 10px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .product:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 15px rgba(0,255,209,0.2);
-    }
-    .product h3 {
-      margin-top: 0;
-      font-size: 1.4rem;
-    }
-    .product p {
-      margin-bottom: 0.5rem;
-    }
-    .coming-soon {
-      opacity: 0.5;
-      font-style: italic;
-    }
-    .buy-button {
-      display: inline-block;
-      margin-top: 1rem;
-      background: #00ffd1;
-      color: #000;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-weight: bold;
-      text-decoration: none;
-      transition: background 0.3s, transform 0.3s;
-    }
-    .buy-button:hover {
-      background: #00c6aa;
-      transform: scale(1.05);
-    }
-    .preview {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #aaa;
-    }
-    footer {
-      text-align: center;
-      padding: 2rem 1rem;
-      font-size: 0.9rem;
-      color: #666;
-      border-top: 1px solid #1f1f1f;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 10px 40px rgba(0,255,209,.08)}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:.78rem;border:1px solid var(--border);color:var(--muted)}
+    .title{font-size:1.1rem;font-weight:800;margin:2px 0}
+    .desc{color:var(--muted);line-height:1.5}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:auto}
+    .btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:10px 14px;border:1px solid var(--border);background:var(--glass);color:var(--text);font-weight:700}
+    .btn:hover{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,209,.12) inset}
+    .btn.primary{border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#000}
+    .tag{font-size:.8rem;color:#000;background:linear-gradient(90deg,var(--accent),var(--accent-2));padding:6px 10px;border-radius:999px}
+
+    /* Footer */
+    footer{border-top:1px solid var(--border);padding:28px 0;color:var(--muted);text-align:center}
+
+    /* Responsive */
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
+  <!-- Header -->
   <header>
-    <h1>PotSplit</h1>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/drops/invisible-book.html">Drops</a>
-      <a href="/premium.html">Premium</a>
-      <a href="/vault">Vault</a>
-      <a href="/shop/shop.html">Shop 🛒</a>
-    </nav>
+    <div class="wrap nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <span>PotSplit</span>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/vault">Vault</a></li>
+          <li><a href="/viewer/index.html">AeonSight</a></li>
+          <li><a class="cta" href="/drops/invisible-book.html">Next Drop</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
-  <div class="shop-container">
-    <h2>🛍️ Digital Product Shop</h2>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap">
+      <h1>Digital Shop</h1>
+      <p class="muted">Premium tools, ebooks, and event passes. Always a free tier — upgrades optional.</p>
 
-    <div class="product">
-      <h3>🔮 AeonSight Viewer</h3>
-      <p>A sleek, animated way to read evolving digital content. Unlock hidden transitions and immersive styles.</p>
-      <a href="/viewer/index.html" class="buy-button">Try Now</a>
-      <div class="preview">💡 Preview available in demo mode.</div>
-    </div>
+      <!-- Filters (non-functional for now, just UI polish) -->
+      <div class="filters">
+        <button class="chip active" type="button">All</button>
+        <button class="chip" type="button">Tools</button>
+        <button class="chip" type="button">Ebooks</button>
+        <button class="chip" type="button">Events</button>
+        <button class="chip" type="button">Coming Soon</button>
+      </div>
 
-    <div class="product">
-      <h3>📚 Exclusive eBook Bundle Vol. I</h3>
-      <p>Includes: “The Black Sentence,” “Invisible Book Club,” and unreleased lore.</p>
-      <p class="coming-soon">Coming Soon</p>
-    </div>
+      <!-- Product Grid -->
+      <div class="grid">
+        <!-- AeonSight Viewer (Demo) -->
+        <article class="card">
+          <span class="pill">Tool</span>
+          <div class="title">AeonSight Viewer — Demo (Free)</div>
+          <p class="desc">A cinematic reader for EPUB/PDF/TXT/HTML with Reader Mode, invisible ink, mini stats, and sleep alert. Try it in your browser.</p>
+          <div class="row">
+            <a class="btn primary" href="/viewer/index.html">🚀 Launch Demo</a>
+            <span class="pill">Browser • Mobile</span>
+          </div>
+        </article>
 
-    <div class="product">
-      <h3>🧩 Encrypted Drop Decoder</h3>
-      <p>Use this tool to reveal alternate content inside secret files.</p>
-      <p class="coming-soon">Coming Soon</p>
-    </div>
+        <!-- AeonSight Pro -->
+        <article class="card">
+          <span class="pill">Tool</span>
+          <div class="title">AeonSight Pro</div>
+          <p class="desc">Uploads & conversions, annotations, themes, export, and author tools. Perfect for deep reading and editing.</p>
+          <div class="row">
+            <span class="tag">Coming Soon</span>
+            <a class="btn" href="/premium.html">Get Notified</a>
+          </div>
+        </article>
 
-    <div class="product">
-      <h3>🚀 PotSplit Premium Membership (Beta)</h3>
-      <p>Early access to future drops, exclusive materials, and interactive puzzles.</p>
-      <p class="coming-soon">Coming Soon</p>
+        <!-- Ebook Bundle -->
+        <article class="card">
+          <span class="pill">Ebook</span>
+          <div class="title">Ebook Bundle Vol. I</div>
+          <p class="desc">Exclusive stories and behind-the-scenes notes from the PotSplit Storyverse. DRM-free and optimized for AeonSight.</p>
+          <div class="row">
+            <span class="tag">Coming Soon</span>
+            <a class="btn" href="/premium.html">Join Waitlist</a>
+          </div>
+        </article>
+
+        <!-- Puzzle Trail Pass -->
+        <article class="card">
+          <span class="pill">Event</span>
+          <div class="title">Puzzle Trail Pass</div>
+          <p class="desc">Timed drop hunt with secret unlocks and prizes. Compete on leaderboards and discover new vault content.</p>
+          <div class="row">
+            <span class="tag">Coming Soon</span>
+            <a class="btn" href="/premium.html">Notify Me</a>
+          </div>
+        </article>
+
+        <!-- Decoder Tool -->
+        <article class="card">
+          <span class="pill">Tool</span>
+          <div class="title">Encrypted Drop Decoder</div>
+          <p class="desc">Reveal alternate content and hidden layers inside special PotSplit files. Works in-browser with no install.</p>
+          <div class="row">
+            <span class="tag">Coming Soon</span>
+            <a class="btn" href="/premium.html">Join Beta</a>
+          </div>
+        </article>
+
+        <!-- Membership -->
+        <article class="card">
+          <span class="pill">Membership</span>
+          <div class="title">PotSplit Premium</div>
+          <p class="desc">Early access to drops, exclusive materials, community events, and member-only puzzles. Cancel anytime.</p>
+          <div class="row">
+            <span class="tag">Coming Soon</span>
+            <a class="btn" href="/premium.html">Learn More</a>
+          </div>
+        </article>
+      </div>
     </div>
-  </div>
+  </section>
 
   <footer>
-    <p>&copy; 2025 PotSplit.com — All rights reserved.</p>
+    <div class="wrap">
+      <div>© <span id="year"></span> PotSplit.com — All rights reserved.</div>
+    </div>
   </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    // (Optional) Later we can wire filter chips to show/hide categories.
+  </script>
 </body>
 </html>
