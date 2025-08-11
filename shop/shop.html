@@ -94,7 +94,8 @@
         <ul>
           <li><a href="/">Home</a></li>
           <li><a href="/vault">Vault</a></li>
-          <li><a href="/viewer/index.html">AeonSight</a></li>
+          <li><a href="/viewer/index.html">AeonSight (Free)</a></li>
+          <li><a href="/viewer-pro/index.html">AeonSight Pro</a></li>
           <li><a class="cta" href="/drops/invisible-book.html">Next Drop</a></li>
         </ul>
       </nav>
@@ -107,7 +108,7 @@
       <h1>Digital Shop</h1>
       <p class="muted">Premium tools, ebooks, and event passes. Always a free tier — upgrades optional.</p>
 
-      <!-- Filters (non-functional for now, just UI polish) -->
+      <!-- Filters (UI only for now) -->
       <div class="filters">
         <button class="chip active" type="button">All</button>
         <button class="chip" type="button">Tools</button>
@@ -118,25 +119,36 @@
 
       <!-- Product Grid -->
       <div class="grid">
-        <!-- AeonSight Viewer (Demo) -->
+        <!-- AeonSight Viewer (Free) -->
         <article class="card">
           <span class="pill">Tool</span>
-          <div class="title">AeonSight Viewer — Demo (Free)</div>
-          <p class="desc">A cinematic reader for EPUB/PDF/TXT/HTML with Reader Mode, invisible ink, mini stats, and sleep alert. Try it in your browser.</p>
+          <div class="title">AeonSight Viewer — Free Demo</div>
+          <p class="desc">A cinematic reader for EPUB/PDF/TXT/HTML with Reader Mode, invisible ink, mini stats, and sleep alert. Runs fully in your browser.</p>
           <div class="row">
-            <a class="btn primary" href="/viewer/index.html">🚀 Launch Demo</a>
+            <a class="btn primary" href="/viewer/index.html">🚀 Launch Free Viewer</a>
             <span class="pill">Browser • Mobile</span>
           </div>
         </article>
 
-        <!-- AeonSight Pro -->
+        <!-- AeonSight Pro (Live) -->
         <article class="card">
           <span class="pill">Tool</span>
           <div class="title">AeonSight Pro</div>
-          <p class="desc">Uploads & conversions, annotations, themes, export, and author tools. Perfect for deep reading and editing.</p>
+          <p class="desc">Local library, annotations, TTS, export/import, goals & streaks, editor mode, and more — all privacy-first and offline-capable.</p>
+          <div class="row">
+            <a class="btn primary" href="/viewer-pro/index.html">✨ Launch Pro</a>
+            <span class="pill">Offline • Privacy-first</span>
+          </div>
+        </article>
+
+        <!-- Pro Download Bundle -->
+        <article class="card">
+          <span class="pill">Tool</span>
+          <div class="title">AeonSight Pro — Download Bundle</div>
+          <p class="desc">Portable ZIP with license, README, demo content, and ready-to-sell assets. Ideal for offline distribution.</p>
           <div class="row">
             <span class="tag">Coming Soon</span>
-            <a class="btn" href="/premium.html">Get Notified</a>
+            <a class="btn" href="/premium.html">Join Waitlist</a>
           </div>
         </article>
 
@@ -144,21 +156,10 @@
         <article class="card">
           <span class="pill">Ebook</span>
           <div class="title">Ebook Bundle Vol. I</div>
-          <p class="desc">Exclusive stories and behind-the-scenes notes from the PotSplit Storyverse. DRM-free and optimized for AeonSight.</p>
+          <p class="desc">Original stories and behind-the-scenes notes from the PotSplit Storyverse. DRM-free and optimized for AeonSight.</p>
           <div class="row">
             <span class="tag">Coming Soon</span>
-            <a class="btn" href="/premium.html">Join Waitlist</a>
-          </div>
-        </article>
-
-        <!-- Puzzle Trail Pass -->
-        <article class="card">
-          <span class="pill">Event</span>
-          <div class="title">Puzzle Trail Pass</div>
-          <p class="desc">Timed drop hunt with secret unlocks and prizes. Compete on leaderboards and discover new vault content.</p>
-          <div class="row">
-            <span class="tag">Coming Soon</span>
-            <a class="btn" href="/premium.html">Notify Me</a>
+            <a class="btn" href="/premium.html">Get Notified</a>
           </div>
         </article>
 
@@ -166,7 +167,7 @@
         <article class="card">
           <span class="pill">Tool</span>
           <div class="title">Encrypted Drop Decoder</div>
-          <p class="desc">Reveal alternate content and hidden layers inside special PotSplit files. Works in-browser with no install.</p>
+          <p class="desc">Reveal alternate content and hidden layers inside special PotSplit files. 100% in-browser — no installs.</p>
           <div class="row">
             <span class="tag">Coming Soon</span>
             <a class="btn" href="/premium.html">Join Beta</a>
@@ -195,7 +196,6 @@
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
-    // (Optional) Later we can wire filter chips to show/hide categories.
   </script>
 </body>
 </html>
