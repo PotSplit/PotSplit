@@ -4,151 +4,107 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AeonSight Pro — PotSplit</title>
-  <link rel="stylesheet" href="./styles.css" />
-
-  <!-- EPUB.js -->
-  <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3/dist/epub.min.js"></script>
-
-  <!-- PDF.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.js"></script>
-  <script>pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js";</script>
-
-  <!-- JSZip (export/import) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0c0f; --card:#11131a; --muted:#9aa0aa; --text:#eef2ff;
+      --accent:#00ffd1; --accent-2:#ff4fd8; --glass:rgba(255,255,255,.06); --border:rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--text);
+      background: radial-gradient(1000px 500px at 80% -10%, rgba(255,79,216,.1), transparent 60%),
+                  radial-gradient(800px 400px at 10% 10%, rgba(0,255,209,.12), transparent 60%),
+                  linear-gradient(180deg,#0b0c10,#090a0d 40%, #0a0b10 100%);}
+    header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(150%) blur(6px);
+      background:linear-gradient(180deg, rgba(10,10,14,.75), rgba(10,10,14,.35) 70%, transparent);
+      border-bottom:1px solid var(--border);padding:.8rem 1rem}
+    .wrap{max-width:1200px;margin:0 auto;padding:0 16px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:10px;align-items:center}
+    .logo{width:28px;height:28px;border-radius:8px;background:conic-gradient(from 180deg,var(--accent),var(--accent-2),var(--accent));box-shadow:0 0 18px rgba(0,255,209,.35), inset 0 0 12px rgba(255,255,255,.12)}
+    .tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    button,.btn{background:var(--glass);border:1px solid var(--border);color:var(--text);padding:.6rem .9rem;border-radius:10px;font-weight:700;cursor:pointer}
+    button:hover,.btn:hover{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,209,.12) inset}
+    .primary{border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#000}
+    main{display:grid;grid-template-columns:320px 1fr;gap:16px;max-width:1200px;margin:18px auto;padding:0 16px}
+    aside{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+    .viewer{background:var(--card);border:1px solid var(--border);border-radius:14px;min-height:70vh;overflow:auto}
+    h2,h3{margin:.3rem 0 1rem}
+    .muted{color:var(--muted)}
+    .lib-list{display:flex;flex-direction:column;gap:10px;max-height:70vh;overflow:auto}
+    .lib-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:.7rem;border:1px solid var(--border);border-radius:10px;background:var(--glass)}
+    .meta{display:flex;flex-direction:column}
+    .meta small{color:var(--muted)}
+    .row{display:flex;gap:8px;align-items:center}
+    #pdfCanvas{display:block;margin:0 auto;padding:16px;background:#0f1116}
+    #epubArea{height:70vh}
+    .bar{height:8px;background:var(--glass);border:1px solid var(--border);border-radius:999px;overflow:hidden;margin:8px 0 0}
+    .bar > span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+    @media(max-width:900px){main{grid-template-columns:1fr}}
+    .danger{background:#2a1212;border-color:#7a2b2b}
+    .danger:hover{box-shadow:0 0 0 3px rgba(255,64,64,.15) inset}
+  </style>
 </head>
 <body>
-  <header class="pro-header">
-    <div class="brand">
-      <span class="logo"></span>
-      <strong>AeonSight Pro</strong>
-      <em>by PotSplit</em>
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <strong>AeonSight Pro</strong>
+      </div>
+      <div class="tools">
+        <label class="btn">
+          📥 Import
+          <input id="fileInput" type="file" accept=".epub,application/epub+zip,application/pdf,.pdf" hidden multiple />
+        </label>
+        <button id="toggleMode" class="btn">Reader Mode: ON</button>
+        <button id="sleepGuard" class="btn">Sleep Guard ⏱</button>
+        <a class="btn" href="/shop/shop.html">← Back to Shop</a>
+      </div>
     </div>
-    <nav class="nav">
-      <a href="/">Home</a>
-      <a href="/shop/shop.html">Shop</a>
-      <a href="/viewer/">Free Viewer</a>
-    </nav>
   </header>
 
-  <main class="pro-shell">
-    <!-- Top bar -->
-    <section class="toolbar">
-      <div class="group">
-        <label class="file">
-          <input id="addFiles" type="file" accept=".epub,.pdf,.txt,.html,.htm" multiple />
-          <span>📚 Add to Library</span>
-        </label>
-        <button id="importZip" class="btn" title="Import notes/bookmarks/goals from a ZIP">📥 Import</button>
-        <button id="exportZip" class="btn" title="Export everything to a ZIP">📤 Export</button>
+  <main>
+    <aside>
+      <h3>Library</h3>
+      <p class="muted">Your imported EPUB/PDF files. Click a title to open. Use 🗑 to remove.</p>
+      <div id="library" class="lib-list"></div>
+      <hr style="border-color:var(--border);margin:14px 0">
+      <button id="clearLibrary" class="btn danger">Clear Library (All)</button>
+    </aside>
+
+    <section class="viewer" id="viewer">
+      <!-- EPUB container -->
+      <div id="epubArea" style="display:none;"></div>
+      <!-- PDF canvas -->
+      <canvas id="pdfCanvas" style="display:none;"></canvas>
+
+      <div id="hud" style="padding:12px;border-top:1px solid var(--border);display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+        <div id="status" class="muted">Ready.</div>
+        <div style="flex:1;min-width:180px">
+          <div class="bar"><span id="progressBar"></span></div>
+          <small id="progressText" class="muted">0%</small>
+        </div>
+        <div class="row">
+          <button id="prev" class="btn">← Prev</button>
+          <button id="next" class="btn">Next →</button>
+        </div>
       </div>
-
-      <div class="group">
-        <button id="prev" class="btn" title="Prev (←)">⟵</button>
-        <button id="next" class="btn" title="Next (→)">⟶</button>
-        <button id="zoomOut" class="btn" title="Zoom out (–)">−</button>
-        <button id="zoomIn" class="btn" title="Zoom in (+)">＋</button>
-        <select id="layout" class="sel" title="Layout">
-          <option value="single" selected>Single</option>
-          <option value="spread">Two-page</option>
-          <option value="auto">Auto</option>
-        </select>
-        <select id="theme" class="sel" title="Theme">
-          <option value="dark" selected>Dark</option>
-          <option value="sepia">Sepia</option>
-          <option value="light">Light</option>
-          <option value="night">Night</option>
-        </select>
-        <select id="font" class="sel" title="Font">
-          <option value="system" selected>System</option>
-          <option value="serif">Serif</option>
-          <option value="mono">Mono</option>
-        </select>
-        <select id="width" class="sel" title="Width">
-          <option value="narrow">Narrow</option>
-          <option value="normal" selected>Normal</option>
-          <option value="wide">Wide</option>
-        </select>
-        <select id="lineHeight" class="sel" title="Line height">
-          <option value="1.4">1.4</option>
-          <option value="1.6" selected>1.6</option>
-          <option value="1.8">1.8</option>
-        </select>
-      </div>
-
-      <div class="group">
-        <label class="switch"><input id="editorToggle" type="checkbox"/><span>Editor</span></label>
-        <label class="switch"><input id="focusToggle" type="checkbox"/><span>Focus</span></label>
-        <label class="switch">⏱ Idle
-          <select id="idle" class="sel small">
-            <option value="0">Off</option>
-            <option value="5">5m</option>
-            <option value="10" selected>10m</option>
-            <option value="15">15m</option>
-          </select>
-        </label>
-        <button id="bookmark" class="btn" title="Bookmark (B)">🔖</button>
-        <button id="highlight" class="btn" title="Highlight selection (H)">🖍️</button>
-      </div>
-    </section>
-
-    <!-- Library + Reader columns -->
-    <section class="columns">
-      <!-- Library -->
-      <aside class="library">
-        <div class="lib-head">
-          <h3>Library</h3>
-          <input id="search" class="search" placeholder="Search…"/>
-        </div>
-        <ul id="libList" class="lib-list"></ul>
-      </aside>
-
-      <!-- Reader -->
-      <section class="reader-col">
-        <!-- TTS -->
-        <div class="tts">
-          <button id="ttsPlay" class="btn">▶︎</button>
-          <button id="ttsPause" class="btn">⏸</button>
-          <button id="ttsStop" class="btn">⏹</button>
-          <label>Rate <input id="ttsRate" type="range" min="0.5" max="1.5" value="1" step="0.1"/></label>
-          <select id="ttsVoice" class="sel small"></select>
-        </div>
-
-        <!-- Drag/drop -->
-        <div id="drop" class="drop"><p>Drop files to add or open…</p></div>
-
-        <!-- Panes -->
-        <div id="epubPane" class="pane hidden"><div id="epubArea"></div></div>
-        <div id="pdfPane" class="pane hidden">
-          <canvas id="pdfCanvas"></canvas>
-          <div class="pdf-meta"><span id="pdfPage">—</span>/<span id="pdfTotal">—</span></div>
-        </div>
-        <div id="textPane" class="pane"><article id="doc" contenteditable="false" class="doc"></article></div>
-
-        <!-- Stats & Goals -->
-        <div class="stats">
-          <span><b>Type:</b> <span id="statType">—</span></span>
-          <span><b>Progress:</b> <span id="statProg">0%</span></span>
-          <span><b>Words:</b> <span id="statWords">0</span></span>
-          <span><b>Elapsed:</b> <span id="statElapsed">00:00:00</span></span>
-          <span><b>WPM:</b> <span id="statWPM">—</span></span>
-          <span><b>Goal:</b> <span id="statGoal">20m</span> (<span id="statStreak">0d</span>)</span>
-        </div>
-      </section>
     </section>
   </main>
 
-  <!-- Modals -->
-  <dialog id="noteModal" class="modal">
-    <form method="dialog">
-      <h3>Note</h3>
-      <textarea id="noteText" rows="6" placeholder="Your note…"></textarea>
-      <menu>
-        <button value="cancel">Cancel</button>
-        <button id="noteSave" value="default">Save</button>
-      </menu>
-    </form>
-  </dialog>
+  <!-- ✅ Dependencies (order matters) -->
+  <!-- JSZip (required by ePub.js) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-pu6yQz1Wp6eB0QSpcG7QvYx2Nq8S4f8RZ8hQ4p1O+F5lK3xT6i7kJ5j1M2V5Qj8iQ6JgF5mHq3V4gGq3Y7cYxA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- ePub.js (compatible with global JSZip) -->
+  <script src="https://unpkg.com/epubjs@0.3/dist/epub.min.js"></script>
+  <!-- PDF.js core + worker -->
+  <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script>
+    // Point PDF.js at a worker script hosted by the same CDN version
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  </script>
 
+  <!-- App logic -->
   <script src="./pro.js"></script>
 </body>
 </html>
