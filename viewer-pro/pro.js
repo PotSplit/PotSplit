@@ -3,6 +3,15 @@
    - Features: import EPUB/PDF, open, navigate, progress %, delete
    - Storage: metadata + files in localStorage (base64) for demo purposes
 */
+// Ensure JSZip is available for ePub.js
+if (typeof window !== "undefined") {
+  if (!window.JSZip && (window.jszip || window.JSZip)) {
+    window.JSZip = window.jszip || window.JSZip;
+  }
+  if (!window.JSZip) {
+    console.error("JSZip not found. EPUB will not work.");
+  }
+}
 
 const el = (id) => document.getElementById(id);
 
