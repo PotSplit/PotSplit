@@ -78,6 +78,8 @@
       <!-- PDF canvas -->
       <canvas id="pdfCanvas" style="display:none;"></canvas>
 
+      <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%2300ffd1'/%3E%3C/svg%3E">
+
       <div id="hud" style="padding:12px;border-top:1px solid var(--border);display:flex;gap:16px;align-items:center;flex-wrap:wrap">
         <div id="status" class="muted">Ready.</div>
         <div style="flex:1;min-width:180px">
@@ -92,19 +94,22 @@
     </section>
   </main>
 
-  <!-- ✅ Dependencies (order matters) -->
-  <!-- JSZip (required by ePub.js) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-pu6yQz1Wp6eB0QSpcG7QvYx2Nq8S4f8RZ8hQ4p1O+F5lK3xT6i7kJ5j1M2V5Qj8iQ6JgF5mHq3V4gGq3Y7cYxA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <!-- ePub.js (compatible with global JSZip) -->
-  <script src="https://unpkg.com/epubjs@0.3/dist/epub.min.js"></script>
-  <!-- PDF.js core + worker -->
-  <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-  <script>
-    // Point PDF.js at a worker script hosted by the same CDN version
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-  </script>
+<!-- ✅ Dependencies (order matters) -->
+<!-- JSZip MUST load before ePub.js and must be on window.JSZip -->
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>window.JSZip = window.JSZip || window.jszip || JSZip;</script>
 
-  <!-- App logic -->
-  <script src="./pro.js"></script>
+<!-- ePub.js (0.3 line works well with JSZip global) -->
+<script src="https://cdn.jsdelivr.net/npm/epubjs@0.3/dist/epub.min.js"></script>
+
+<!-- PDF.js core + worker -->
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+</script>
+
+<!-- App logic -->
+<script src="./pro.js"></script>
+
 </body>
 </html>
