@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AeonSight Pro — PotSplit</title>
+  <link rel="stylesheet" href="./styles.css" />
+
+  <!-- EPUB.js -->
+  <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3/dist/epub.min.js"></script>
+
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js";</script>
+
+  <!-- JSZip (export/import) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+  <header class="pro-header">
+    <div class="brand">
+      <span class="logo"></span>
+      <strong>AeonSight Pro</strong>
+      <em>by PotSplit</em>
+    </div>
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/shop/shop.html">Shop</a>
+      <a href="/viewer/">Free Viewer</a>
+    </nav>
+  </header>
+
+  <main class="pro-shell">
+    <!-- Top bar -->
+    <section class="toolbar">
+      <div class="group">
+        <label class="file">
+          <input id="addFiles" type="file" accept=".epub,.pdf,.txt,.html,.htm" multiple />
+          <span>📚 Add to Library</span>
+        </label>
+        <button id="importZip" class="btn" title="Import notes/bookmarks/goals from a ZIP">📥 Import</button>
+        <button id="exportZip" class="btn" title="Export everything to a ZIP">📤 Export</button>
+      </div>
+
+      <div class="group">
+        <button id="prev" class="btn" title="Prev (←)">⟵</button>
+        <button id="next" class="btn" title="Next (→)">⟶</button>
+        <button id="zoomOut" class="btn" title="Zoom out (–)">−</button>
+        <button id="zoomIn" class="btn" title="Zoom in (+)">＋</button>
+        <select id="layout" class="sel" title="Layout">
+          <option value="single" selected>Single</option>
+          <option value="spread">Two-page</option>
+          <option value="auto">Auto</option>
+        </select>
+        <select id="theme" class="sel" title="Theme">
+          <option value="dark" selected>Dark</option>
+          <option value="sepia">Sepia</option>
+          <option value="light">Light</option>
+          <option value="night">Night</option>
+        </select>
+        <select id="font" class="sel" title="Font">
+          <option value="system" selected>System</option>
+          <option value="serif">Serif</option>
+          <option value="mono">Mono</option>
+        </select>
+        <select id="width" class="sel" title="Width">
+          <option value="narrow">Narrow</option>
+          <option value="normal" selected>Normal</option>
+          <option value="wide">Wide</option>
+        </select>
+        <select id="lineHeight" class="sel" title="Line height">
+          <option value="1.4">1.4</option>
+          <option value="1.6" selected>1.6</option>
+          <option value="1.8">1.8</option>
+        </select>
+      </div>
+
+      <div class="group">
+        <label class="switch"><input id="editorToggle" type="checkbox"/><span>Editor</span></label>
+        <label class="switch"><input id="focusToggle" type="checkbox"/><span>Focus</span></label>
+        <label class="switch">⏱ Idle
+          <select id="idle" class="sel small">
+            <option value="0">Off</option>
+            <option value="5">5m</option>
+            <option value="10" selected>10m</option>
+            <option value="15">15m</option>
+          </select>
+        </label>
+        <button id="bookmark" class="btn" title="Bookmark (B)">🔖</button>
+        <button id="highlight" class="btn" title="Highlight selection (H)">🖍️</button>
+      </div>
+    </section>
+
+    <!-- Library + Reader columns -->
+    <section class="columns">
+      <!-- Library -->
+      <aside class="library">
+        <div class="lib-head">
+          <h3>Library</h3>
+          <input id="search" class="search" placeholder="Search…"/>
+        </div>
+        <ul id="libList" class="lib-list"></ul>
+      </aside>
+
+      <!-- Reader -->
+      <section class="reader-col">
+        <!-- TTS -->
+        <div class="tts">
+          <button id="ttsPlay" class="btn">▶︎</button>
+          <button id="ttsPause" class="btn">⏸</button>
+          <button id="ttsStop" class="btn">⏹</button>
+          <label>Rate <input id="ttsRate" type="range" min="0.5" max="1.5" value="1" step="0.1"/></label>
+          <select id="ttsVoice" class="sel small"></select>
+        </div>
+
+        <!-- Drag/drop -->
+        <div id="drop" class="drop"><p>Drop files to add or open…</p></div>
+
+        <!-- Panes -->
+        <div id="epubPane" class="pane hidden"><div id="epubArea"></div></div>
+        <div id="pdfPane" class="pane hidden">
+          <canvas id="pdfCanvas"></canvas>
+          <div class="pdf-meta"><span id="pdfPage">—</span>/<span id="pdfTotal">—</span></div>
+        </div>
+        <div id="textPane" class="pane"><article id="doc" contenteditable="false" class="doc"></article></div>
+
+        <!-- Stats & Goals -->
+        <div class="stats">
+          <span><b>Type:</b> <span id="statType">—</span></span>
+          <span><b>Progress:</b> <span id="statProg">0%</span></span>
+          <span><b>Words:</b> <span id="statWords">0</span></span>
+          <span><b>Elapsed:</b> <span id="statElapsed">00:00:00</span></span>
+          <span><b>WPM:</b> <span id="statWPM">—</span></span>
+          <span><b>Goal:</b> <span id="statGoal">20m</span> (<span id="statStreak">0d</span>)</span>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- Modals -->
+  <dialog id="noteModal" class="modal">
+    <form method="dialog">
+      <h3>Note</h3>
+      <textarea id="noteText" rows="6" placeholder="Your note…"></textarea>
+      <menu>
+        <button value="cancel">Cancel</button>
+        <button id="noteSave" value="default">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="./pro.js"></script>
+</body>
+</html>
