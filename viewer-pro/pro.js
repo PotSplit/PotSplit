@@ -1,456 +1,622 @@
-/* AeonSight Pro — PotSplit
-   EPUB + PDF viewer with zoom, fit, FOV, reader mode, invisible ink, stats,
-   sleep guard, library, and persistence. */
+/* AeonSight Pro — single-file JS
+   Features: EPUB + PDF + TXT/HTML; library (localStorage); delete/clear; drag & drop; paste data URLs;
+   Reader Mode; Invisible Lens; Zoom; FOV; Font %; Sleep-Guard; Stats; Keyboard shortcuts.
+*/
 
-(() => {
-  // ---------- DOM ----------
-  const fileInput   = $id('file-input');
-  const libEl       = $id('lib');
-  const stage       = $id('stage');
-  const pageEl      = $('.page');
-  const contentEl   = $id('content');
-  const pageLabel   = $id('page-label');
+////////////////////
+// DOM references //
+////////////////////
+const contentEl = document.getElementById('content');
+const libList   = document.getElementById('libList');
 
-  const btnPrev     = $id('btn-prev');
-  const btnNext     = $id('btn-next');
-  const btnZoomIn   = $id('btn-zoom-in');
-  const btnZoomOut  = $id('btn-zoom-out');
-  const btnFitW     = $id('btn-fit-width');
-  const btnFitP     = $id('btn-fit-page');
-  const btnSleep    = $id('btn-sleep');
-  const btnClear    = $id('btn-clear');
+const fileInput = document.getElementById('fileInput');
+const loadDemo  = document.getElementById('loadDemo');
+const clearLib  = document.getElementById('clearLib');
 
-  const fovInput    = $id('fov');
-  const sleepMin    = $id('sleep-min');
-  const toggleReader= $id('toggle-reader');
-  const toggleInk   = $id('toggle-ink');
+const prevBtn   = document.getElementById('prevPage');
+const nextBtn   = document.getElementById('nextPage');
+const zoomOut   = document.getElementById('zoomOut');
+const zoomIn    = document.getElementById('zoomIn');
+const fovRange  = document.getElementById('fov');
+const fontPct   = document.getElementById('fontPct');
 
-  const statName    = $id('stat-name');
-  const statStatus  = $id('stat-status');
-  const statProg    = $id('stat-progress');
-  const statWords   = $id('stat-words');
-  const statTime    = $id('stat-time');
-  const statZoom    = $id('stat-zoom');
+const toggleReader = document.getElementById('toggleReader');
+const toggleLens   = document.getElementById('toggleLens');
+const sleepBtn     = document.getElementById('sleepBtn');
+const sleepMinsInp = document.getElementById('sleepMins');
 
-  // ---------- State ----------
-  const state = {
-    docName: '—',
-    type: 'none',     // 'pdf' | 'epub' | 'txt' | 'html'
-    pdf: null,        // PDFDocumentProxy
-    pdfPage: 1,
-    pdfPages: 0,
-    pdfScale: 1.0,
+const lensEl    = document.getElementById('lens');
 
-    epubBook: null,   // ePub.js Book
-    epubRend: null,   // ePub.js Rendition
-    epubFontPct: 100,
-    epubLoc: null,
+const statName  = document.getElementById('statName');
+const statStatus= document.getElementById('statStatus');
+const statProg  = document.getElementById('statProg');
+const statPage  = document.getElementById('statPage');
+const statTime  = document.getElementById('statTime');
+const statWords = document.getElementById('statWords');
 
-    readerMode: true,
-    inkOn: false,
-    fov: 1200,
+//////////////////////
+// Persistent state //
+//////////////////////
+const LS_KEY_LIB = 'aeon:library:v2'; // [{id,name,type,dataUrl,added}]
+const LS_KEY_CFG = 'aeon:cfg';
+const LS_KEY_TIME= 'aeon:time';
 
-    sessionStart: Date.now(),
-    sleepTimer: null,
-    sleepArmed: false,
+const state = {
+  type: null,                // 'pdf' | 'epub' | 'txt' | 'html'
+  docName: null,
+  currentId: null,
 
-    library: loadLibrary(), // [{id, name, type, dataUrl, addedAt}]
-  };
+  // PDF
+  pdfDoc: null,
+  pdfPage: 1,
+  pdfScale: 1.1,
 
-  // ---------- Utils ----------
-  function $(sel, root = document){ return root.querySelector(sel); }
-  function $id(id){ return document.getElementById(id); }
-  function fmtTime(ms){
-    const s = Math.floor(ms/1000), m = Math.floor(s/60), sec = s%60;
-    return `${m}:${sec.toString().padStart(2,'0')}`;
+  // EPUB
+  epubBook: null,
+  epubRend: null,
+  epubFontPct: 100,
+  epubBlobUrl: null,
+
+  // Stats
+  startedAt: 0,
+  seconds: 0,
+  wordsRead: 0,
+
+  // Sleep guard
+  sleepMinutes: 10,
+  sleepTimer: null,
+  lastTurnPageAt: 0,
+
+  // UI
+  fov: 72
+};
+
+/////////////////////
+// Utility helpers //
+/////////////////////
+const saveJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const loadJSON = (k, def) => { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } };
+const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+const fmtTime = secs => {
+  secs = Math.floor(secs);
+  const m = Math.floor(secs/60);
+  const s = secs % 60;
+  return `${m}:${s.toString().padStart(2,'0')}`;
+};
+
+function extOfName(name=''){
+  const m = name.toLowerCase().match(/\.([a-z0-9]+)$/);
+  return m ? m[1] : '';
+}
+function mimeFromExt(ext){
+  if (ext === 'pdf') return 'application/pdf';
+  if (ext === 'epub') return 'application/epub+zip';
+  if (ext === 'txt') return 'text/plain';
+  if (ext === 'html' || ext === 'htm') return 'text/html';
+  return 'application/octet-stream';
+}
+function fileToDataUrl(file){
+  return new Promise((res, rej)=>{
+    const fr = new FileReader();
+    fr.onerror = () => rej(fr.error);
+    fr.onload = () => res(fr.result);
+    fr.readAsDataURL(file);
+  });
+}
+
+// Normalize odd data strings to proper data: URLs
+function normalizeDataUrl(u, type){
+  if (!u) return u;
+  if (/^(data:|blob:|https?:)/i.test(u)) return u;
+
+  // Most common case we saw: "...application/epub+zip;base64,<...>" without "data:"
+  const m = u.match(/([a-z0-9.+-]+\/[a-z0-9.+-]+);base64,([A-Za-z0-9+/=]+)$/i);
+  if (m) return `data:${m[1]};base64,${m[2]}`;
+
+  const idx = u.indexOf('base64,');
+  if (idx !== -1) {
+    const b64 = u.slice(idx + 7);
+    const mime =
+      type === 'epub' ? 'application/epub+zip' :
+      type === 'pdf'  ? 'application/pdf'     :
+      (type === 'txt' ? 'text/plain'          :
+      (type === 'html'? 'text/html'           : 'application/octet-stream'));
+    return `data:${mime};base64,${b64}`;
   }
-  function wordCountFromText(text){
-    if (!text) return 0;
-    return (text.trim().match(/\b[\p{L}\p{N}'-]+\b/gu) || []).length;
-  }
-  function saveLibrary(){ localStorage.setItem('aeon:lib', JSON.stringify(state.library)); }
-  function loadLibrary(){ try{ return JSON.parse(localStorage.getItem('aeon:lib')||'[]'); }catch{ return []; } }
-  function saveSettings(){
-    localStorage.setItem('aeon:settings', JSON.stringify({
-      readerMode: state.readerMode, inkOn: state.inkOn, fov: state.fov
-    }));
-  }
-  (function restoreSettings(){
-    try{
-      const s = JSON.parse(localStorage.getItem('aeon:settings')||'{}');
-      if (typeof s.readerMode === 'boolean') { state.readerMode = s.readerMode; toggleReader.checked = s.readerMode; document.body.classList.toggle('reader-mode', s.readerMode); }
-      if (typeof s.inkOn === 'boolean') { state.inkOn = s.inkOn; toggleInk.checked = s.inkOn; pageEl.classList.toggle('ink-on', s.inkOn); }
-      if (typeof s.fov === 'number') { state.fov = s.fov; fovInput.value = s.fov; stage.style.perspective = `${s.fov}px`; }
-    }catch{}
-  })();
+  return u;
+}
 
-  // ---------- Library UI ----------
-  function renderLibrary(){
-    libEl.innerHTML = '';
-    if (!state.library.length){
-      libEl.innerHTML = `<div class="item"><div class="meta"><div class="title">Your library is empty</div><div class="sub">Open files to add them here</div></div></div>`;
-      return;
-    }
-    state.library.forEach(item => {
-      const el = document.createElement('div');
-      el.className = 'item';
-      el.innerHTML = `
-        <div class="meta">
-          <div class="title">${escapeHtml(item.name)}</div>
-          <div class="sub">${item.type.toUpperCase()} • ${new Date(item.addedAt).toLocaleString()}</div>
-        </div>
-        <div class="row">
-          <button class="btn small" data-id="${item.id}" data-act="open">Open</button>
-          <button class="btn small" data-id="${item.id}" data-act="del">🗑</button>
-        </div>`;
-      libEl.appendChild(el);
-    });
+function dataUrlToUint8(dataUrl){
+  const base64 = dataUrl.split(',')[1] || dataUrl; // tolerate already-base64 chunk
+  const bin = atob(base64);
+  const len = bin.length;
+  const bytes = new Uint8Array(len);
+  for (let i=0;i<len;i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+function dataUrlToBlobUrl(dataUrl, mime='application/octet-stream'){
+  const u8 = dataUrlToUint8(dataUrl);
+  const blob = new Blob([u8], { type: mime });
+  return URL.createObjectURL(blob);
+}
+
+//////////////////////
+// Library handling //
+//////////////////////
+function getLibrary(){ return loadJSON(LS_KEY_LIB, []); }
+function setLibrary(list){ saveJSON(LS_KEY_LIB, list); renderLibrary(); }
+
+function addToLibrary(name, type, dataUrl){
+  const id = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const item = { id, name, type, dataUrl, added: Date.now() };
+  const lib = getLibrary();
+  lib.unshift(item);
+  setLibrary(lib);
+  return item;
+}
+function removeFromLibrary(id){
+  setLibrary(getLibrary().filter(x => x.id !== id));
+  if (state.currentId === id) {
+    contentEl.innerHTML = '<div class="empty">Removed. Choose another file.</div>';
+    resetDoc();
   }
-  function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+}
+function clearLibrary(){
+  saveJSON(LS_KEY_LIB, []);
   renderLibrary();
+}
 
-  libEl.addEventListener('click', async (e) => {
-    const btn = e.target.closest('button[data-act]');
-    if (!btn) return;
-    const id = btn.getAttribute('data-id');
-    const act = btn.getAttribute('data-act');
-    const item = state.library.find(x => x.id === id);
-    if (!item) return;
-
-    if (act === 'open'){
-      await openFromLibrary(item);
-    } else if (act === 'del'){
-      state.library = state.library.filter(x => x.id !== id);
-      saveLibrary(); renderLibrary();
-    }
-  });
-
-  btnClear.addEventListener('click', () => {
-    if (confirm('Clear your entire library?')) {
-      state.library = []; saveLibrary(); renderLibrary();
-    }
-  });
-
-  // ---------- File Opening ----------
-  fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const type = pickType(file.name);
-    const dataUrl = await fileToDataUrl(file);
-    const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-    state.library.unshift({ id, name: file.name, type, dataUrl, addedAt: Date.now() });
-    saveLibrary(); renderLibrary();
-    await openBuffer(file.name, type, dataUrl);
-    fileInput.value = '';
-  });
-
-  async function openFromLibrary(item){
-    await openBuffer(item.name, item.type, item.dataUrl);
+function renderLibrary(){
+  const lib = getLibrary();
+  libList.innerHTML = '';
+  for (const item of lib){
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div class="meta">
+        <div class="name">${item.name}</div>
+        <div class="sub">${item.type.toUpperCase()} • ${new Date(item.added).toLocaleString()}</div>
+      </div>
+      <div class="actions">
+        <button class="btn small subtle" data-open="${item.id}">Open</button>
+        <button class="btn small danger" data-del="${item.id}">Delete</button>
+      </div>
+    `;
+    libList.appendChild(li);
   }
+}
 
-  function pickType(name){
-    const n = name.toLowerCase();
-    if (n.endsWith('.pdf')) return 'pdf';
-    if (n.endsWith('.epub')) return 'epub';
-    if (n.endsWith('.txt')) return 'txt';
-    if (n.endsWith('.html') || n.endsWith('.htm')) return 'html';
-    return 'pdf';
+////////////////////
+// Reader control //
+////////////////////
+function resetDoc(){
+  // PDF cleanup
+  state.pdfDoc = null;
+  state.pdfPage = 1;
+
+  // EPUB cleanup
+  if (state.epubRend){ try{ state.epubRend.destroy(); } catch{} state.epubRend = null; }
+  if (state.epubBook){ try{ state.epubBook.destroy(); } catch{} state.epubBook = null; }
+  if (state.epubBlobUrl){ URL.revokeObjectURL(state.epubBlobUrl); state.epubBlobUrl = null; }
+
+  // Stats
+  state.seconds = 0;
+  state.wordsRead = 0;
+  state.startedAt = Date.now();
+  updateStats();
+  stopSleepGuard();
+  kickSleepGuard();
+}
+
+function setStatus(msg){ statStatus.textContent = msg; }
+function updateStats(){
+  statName.textContent = state.docName ?? '—';
+  statPage.textContent = (state.type === 'pdf' && state.pdfDoc)
+    ? `${state.pdfPage}/${state.pdfDoc.numPages}` :
+    (state.type === 'epub' ? '—' : '—');
+  statTime.textContent = fmtTime(state.seconds);
+  statWords.textContent = String(state.wordsRead);
+}
+
+function tickTimer(){
+  state.seconds += 1;
+  updateStats();
+}
+setInterval(tickTimer, 1000);
+
+//////////////////////
+// Sleep Guard beep //
+//////////////////////
+let buzzer;
+function ensureBuzzer(){
+  if (!buzzer){
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    buzzer = (ms=800) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880;
+      g.gain.value = 0.001;
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (ms/1000));
+      o.stop(ctx.currentTime + (ms/1000));
+    };
   }
+  return buzzer;
+}
+function stopSleepGuard(){
+  if (state.sleepTimer){ clearTimeout(state.sleepTimer); state.sleepTimer = null; }
+}
+function kickSleepGuard(){
+  stopSleepGuard();
+  const mins = Number(sleepMinsInp.value || state.sleepMinutes);
+  state.sleepMinutes = clamp(mins, 1, 120);
+  state.lastTurnPageAt = Date.now();
+  state.sleepTimer = setTimeout(()=>{
+    setStatus('Sleep alert!');
+    try{ ensureBuzzer()(); }catch{}
+  }, state.sleepMinutes*60*1000);
+}
 
-  function fileToDataUrl(file){
-    return new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve(r.result);
-      r.onerror = reject;
-      r.readAsDataURL(file);
+///////////////////////////
+// Openers per file type //
+///////////////////////////
+async function openFromLibrary(id){
+  const item = getLibrary().find(x => x.id === id);
+  if (!item) return;
+  openBuffer(item.name, item.type, item.dataUrl);
+  state.currentId = id;
+}
+
+async function openBuffer(name, type, dataUrl){
+  resetDoc();
+  state.docName = name;
+  state.type = type;
+  statName.textContent = name;
+  setStatus('Loading…');
+  contentEl.innerHTML = '';
+
+  const safeUrl = normalizeDataUrl(dataUrl, type);
+
+  if (type === 'pdf')       await openPDF(name, safeUrl);
+  else if (type === 'epub') await openEPUB(name, safeUrl);
+  else if (type === 'txt' || type === 'html') await openPlain(name, safeUrl, type);
+  else {
+    contentEl.innerHTML = '<p>Unsupported file type.</p>';
+    setStatus('Unsupported');
+  }
+}
+
+async function openPDF(name, dataUrl){
+  try{
+    if (!window['pdfjsLib']) throw new Error('PDF.js missing');
+    const bytes = dataUrlToUint8(dataUrl);
+    const loadingTask = pdfjsLib.getDocument({ data: bytes });
+    state.pdfDoc = await loadingTask.promise;
+    state.pdfPage = clamp(state.pdfPage, 1, state.pdfDoc.numPages);
+    contentEl.innerHTML = '';
+    await renderPDFPage();
+    setStatus('Ready');
+  }catch(err){
+    console.error(err);
+    contentEl.innerHTML = '<p>Failed to open PDF.</p>';
+    setStatus('Error');
+  }
+}
+async function renderPDFPage(){
+  const page = await state.pdfDoc.getPage(state.pdfPage);
+  const viewport = page.getViewport({ scale: state.pdfScale });
+  const canvas = document.createElement('canvas');
+  canvas.className = 'pdf-page';
+  const ctx = canvas.getContext('2d');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  contentEl.innerHTML = '';
+  contentEl.appendChild(canvas);
+  await page.render({ canvasContext: ctx, viewport }).promise;
+
+  statProg.textContent = `${Math.round((state.pdfPage/state.pdfDoc.numPages)*100)}%`;
+  statPage.textContent = `${state.pdfPage}/${state.pdfDoc.numPages}`;
+
+  // Estimate words by page turn
+  state.wordsRead += Math.round(280 * 0.9); // rough avg
+  kickSleepGuard();
+}
+
+async function openEPUB(name, dataUrl){
+  try{
+    if (!window['ePub']) throw new Error('ePub.js missing');
+    if (!window['JSZip']) throw new Error('JSZip missing (EPUB needs JSZip)');
+
+    // Use blob URL so ePub.js never tries to fetch relative paths
+    if (state.epubBlobUrl) URL.revokeObjectURL(state.epubBlobUrl);
+    state.epubBlobUrl = dataUrlToBlobUrl(dataUrl, 'application/epub+zip');
+
+    state.epubBook = ePub(state.epubBlobUrl);
+    contentEl.innerHTML = '';
+    const mount = document.createElement('div');
+    mount.className = 'epub-mount';
+    contentEl.appendChild(mount);
+
+    state.epubRend = state.epubBook.renderTo(mount, {
+      width: '100%',
+      height: '84vh',
+      spread: 'none',
+      allowScriptedContent: true
     });
-  }
 
-  async function openBuffer(name, type, dataUrl){
-    resetSleepGuard();
-    state.docName = name;
-    statName.textContent = name;
-    statStatus.textContent = 'Loading…';
-    contentEl.innerHTML = '';
+    // Themes & font size
+    state.epubFontPct = Number(fontPct.value || 100);
+    state.epubRend.themes.register('aeon', {
+      'body': { 'color':'#eaf0ff','background':'#0b0c10','line-height':'1.7', 'font-size':`${state.epubFontPct}%` },
+      'p':    { 'margin':'0 0 1em 0' }
+    });
+    state.epubRend.themes.select('aeon');
 
-    if (state.epubRend){ state.epubRend.destroy(); state.epubRend = null; }
-    if (state.epubBook){ try{ state.epubBook.destroy(); }catch{} state.epubBook = null; }
+    await state.epubRend.display();
 
-    if (type === 'pdf'){
-      await openPDF(name, dataUrl);
-    } else if (type === 'epub'){
-      await openEPUB(name, dataUrl);
-    } else if (type === 'txt' || type === 'html'){
-      await openPlain(name, dataUrl, type);
-    }
-  }
-
-  // ---------- PDF ----------
-  async function openPDF(name, dataUrl){
-    try{
-      const pdfData = atob(dataUrl.split(',')[1]);
-      const byteArray = new Uint8Array(pdfData.length);
-      for (let i=0; i<pdfData.length; i++) byteArray[i] = pdfData.charCodeAt(i);
-
-      state.pdf = await pdfjsLib.getDocument({ data: byteArray }).promise;
-      state.type = 'pdf';
-      state.pdfPage = 1;
-      state.pdfPages = state.pdf.numPages;
-      state.pdfScale = loadNum('aeon:pdfScale', 1.0);
-
-      await renderPDFPage();
-      statStatus.textContent = 'Ready';
-    }catch(err){
-      statStatus.textContent = 'Error opening PDF';
-      console.error(err);
-      contentEl.innerHTML = `<p>Failed to open PDF.</p>`;
-    }
-  }
-
-  async function renderPDFPage(){
-    const page = await state.pdf.getPage(state.pdfPage);
-    const viewport = page.getViewport({ scale: state.pdfScale });
-
-    contentEl.innerHTML = '';
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    contentEl.appendChild(canvas);
-
-    await page.render({ canvasContext: ctx, viewport }).promise;
-
-    // Update progress + words
-    pageLabel.textContent = `Page ${state.pdfPage} / ${state.pdfPages}`;
-    const pct = Math.round(100 * state.pdfPage / state.pdfPages);
-    statProg.textContent = `${pct}%`;
-
-    try{
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map(it => it.str).join(' ');
-      statWords.textContent = wordCountFromText(pageText);
-    }catch{
-      statWords.textContent = '—';
-    }
-
-    saveNum('aeon:pdfScale', state.pdfScale);
-    statZoom.textContent = `${Math.round(state.pdfScale*100)}%`;
-  }
-
-  // ---------- EPUB ----------
-  async function openEPUB(name, dataUrl){
-    try{
-      // Ensure JSZip present
-      if (!window.JSZip) {
-        console.error('JSZip not found — EPUB disabled');
-        statStatus.textContent = 'JSZip missing (EPUB disabled)';
-        return;
-      }
-      state.epubBook = ePub(dataUrl); // 0.3 API
-      state.type = 'epub';
-      state.epubFontPct = loadNum('aeon:epubFont', 100);
-
-      // Render into a custom area
-      contentEl.innerHTML = '';
-      const mount = document.createElement('div');
-      mount.style.minHeight = '60vh';
-      contentEl.appendChild(mount);
-
-      state.epubRend = state.epubBook.renderTo(mount, {
-        width: '100%', height: '80vh', spread: 'none', allowScriptedContent: true
-      });
-
-      // Theme for reader-mode defaults
-      state.epubRend.themes.register('aeon', {
-        'body': { 'color': '#eef2ff', 'background': '#0c0f14', 'line-height': '1.7' },
-        'p': { 'margin': '0 0 1em 0', 'font-size': '1rem' }
-      });
-      state.epubRend.themes.select('aeon');
-      state.epubRend.themes.fontSize(`${state.epubFontPct}%`);
-
-      await state.epubRend.display();
-
-      updateEPUBMeta();
-      attachEPUBHandlers();
-      statStatus.textContent = 'Ready';
-    }catch(err){
-      statStatus.textContent = 'Error opening EPUB';
-      console.error(err);
-      contentEl.innerHTML = `<p>Failed to open EPUB.</p>`;
-    }
-  }
-
-  function attachEPUBHandlers(){
-    state.epubRend.on('rendered', async () => {
-      // Progress
+    // Update progress
+    state.epubRend.on('relocated', (loc)=>{
       try{
-        const loc = await state.epubRend.currentLocation();
-        if (loc && state.epubBook && state.epubBook.navigation){
-          const cfi = loc.start?.cfi || '';
-          state.epubLoc = cfi;
-          const pct = Math.round((loc.start.percentage||0)*100);
-          statProg.textContent = `${pct}%`;
-          pageLabel.textContent = `EPUB • ${pct}%`;
-        }
+        const pct = Math.round(loc.start.percentage * 100);
+        statProg.textContent = `${pct}%`;
+        statPage.textContent = `${loc.start.displayed.page}/${loc.start.displayed.total}`;
+        // Estimate words per relocation
+        state.wordsRead += Math.round(250 * 0.9);
+        kickSleepGuard();
       }catch{}
-
-      // Word count of visible iframe
-      const contents = state.epubRend.getContents();
-      let words = 0;
-      if (contents && contents.length){
-        try{
-          const doc = contents[0].document;
-          const txt = doc?.body?.innerText || '';
-          words = wordCountFromText(txt);
-        }catch{}
-      }
-      statWords.textContent = String(words);
     });
-  }
 
-  async function updateEPUBMeta(){
+    setStatus('Ready');
+  }catch(err){
+    console.error(err);
+    contentEl.innerHTML = '<p>Failed to open EPUB.</p>';
+    setStatus('Error');
+  }
+}
+
+async function openPlain(name, dataUrl, type){
+  try{
+    // decode base64
+    const bytes = dataUrlToUint8(dataUrl);
+    const text = new TextDecoder('utf-8').decode(bytes);
+
+    // very-safe render: strip tags for html
+    const safe = (type === 'html') ? stripHtml(text) : text;
+    contentEl.innerHTML = '';
+    const pre = document.createElement('div');
+    pre.style.whiteSpace = 'pre-wrap';
+    pre.style.wordBreak = 'break-word';
+    pre.textContent = safe;
+    contentEl.appendChild(pre);
+
+    // words & stats
+    const words = safe.trim().split(/\s+/g).filter(Boolean).length;
+    state.wordsRead += words;
+    statProg.textContent = '—';
+    statPage.textContent = '—';
+    setStatus('Ready');
+    kickSleepGuard();
+  }catch(err){
+    console.error(err);
+    contentEl.innerHTML = '<p>Failed to open text.</p>';
+    setStatus('Error');
+  }
+}
+function stripHtml(html){
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return (div.textContent || div.innerText || '').trim();
+}
+
+///////////////////////////
+// Controls & Shortcuts  //
+///////////////////////////
+prevBtn.onclick = async ()=>{
+  if (state.type === 'pdf' && state.pdfDoc){
+    state.pdfPage = clamp(state.pdfPage - 1, 1, state.pdfDoc.numPages);
+    await renderPDFPage();
+  } else if (state.type === 'epub' && state.epubRend){
+    await state.epubRend.prev();
+  }
+};
+nextBtn.onclick = async ()=>{
+  if (state.type === 'pdf' && state.pdfDoc){
+    state.pdfPage = clamp(state.pdfPage + 1, 1, state.pdfDoc.numPages);
+    await renderPDFPage();
+  } else if (state.type === 'epub' && state.epubRend){
+    await state.epubRend.next();
+  }
+};
+
+zoomIn.onclick = async ()=>{
+  if (state.type === 'pdf' && state.pdfDoc){
+    state.pdfScale = clamp(state.pdfScale + 0.1, 0.5, 3);
+    await renderPDFPage();
+  } else if (state.type === 'epub' && state.epubRend){
+    state.epubFontPct = clamp(state.epubFontPct + 10, 80, 180);
+    state.epubRend.themes.fontSize(`${state.epubFontPct}%`);
+  } else if (state.type === 'txt' || state.type === 'html'){
+    const cur = Number(fontPct.value||100)+10; fontPct.value = clamp(cur, 80, 180);
+    contentEl.style.fontSize = `${fontPct.value}%`;
+  }
+};
+zoomOut.onclick = async ()=>{
+  if (state.type === 'pdf' && state.pdfDoc){
+    state.pdfScale = clamp(state.pdfScale - 0.1, 0.5, 3);
+    await renderPDFPage();
+  } else if (state.type === 'epub' && state.epubRend){
+    state.epubFontPct = clamp(state.epubFontPct - 10, 80, 180);
+    state.epubRend.themes.fontSize(`${state.epubFontPct}%`);
+  } else if (state.type === 'txt' || state.type === 'html'){
+    const cur = Number(fontPct.value||100)-10; fontPct.value = clamp(cur, 80, 180);
+    contentEl.style.fontSize = `${fontPct.value}%`;
+  }
+};
+
+fovRange.oninput = ()=>{
+  state.fov = Number(fovRange.value);
+  // FOV as max width for reader columns
+  if (state.fov <= 56) {
+    contentEl.classList.add('narrow');
+    contentEl.classList.remove('wide');
+  } else if (state.fov >= 86) {
+    contentEl.classList.add('wide');
+    contentEl.classList.remove('narrow');
+  } else {
+    contentEl.classList.remove('wide','narrow');
+  }
+};
+
+fontPct.oninput = ()=>{
+  const v = Number(fontPct.value);
+  if (state.type === 'epub' && state.epubRend){
+    state.epubFontPct = clamp(v,80,180);
+    state.epubRend.themes.fontSize(`${state.epubFontPct}%`);
+  } else {
+    contentEl.style.fontSize = `${v}%`;
+  }
+};
+
+toggleReader.onclick = ()=>{
+  document.body.classList.toggle('reader');
+};
+toggleLens.onclick = ()=>{
+  lensEl.classList.toggle('on');
+};
+sleepBtn.onclick = ()=>{
+  kickSleepGuard();
+  setStatus(`Sleep in ${state.sleepMinutes}m`);
+};
+
+document.addEventListener('keydown', async (e)=>{
+  if (e.target && (e.target.tagName === 'INPUT')) return;
+  if (e.key === 'ArrowRight'){ nextBtn.click(); }
+  if (e.key === 'ArrowLeft'){ prevBtn.click(); }
+  if (e.key === '+' || e.key === '='){ zoomIn.click(); }
+  if (e.key === '-'){ zoomOut.click(); }
+  if (e.key.toLowerCase() === 'r'){ toggleReader.click(); }
+  if (e.key.toLowerCase() === 'i'){ toggleLens.click(); }
+  if (e.key.toLowerCase() === 's'){ sleepBtn.click(); }
+  if (e.key.toLowerCase() === 'f'){ document.documentElement.requestFullscreen?.(); }
+});
+
+////////////////////
+// File ingestion //
+////////////////////
+fileInput.onchange = async (ev)=>{
+  const files = Array.from(ev.target.files || []);
+  for (const f of files){
+    const ext = extOfName(f.name);
+    const type = (ext === 'pdf'||ext==='epub'||ext==='txt'||ext==='html') ? ext : 'txt';
+    const dataUrl = await fileToDataUrl(f);
+    const item = addToLibrary(f.name, type, dataUrl);
+    await openFromLibrary(item.id);
+  }
+  fileInput.value = '';
+};
+
+function handleDrop(e){
+  e.preventDefault();
+  const files = Array.from(e.dataTransfer.files || []);
+  if (files.length){
+    fileInput.files = e.dataTransfer.files;
+    fileInput.onchange({ target: fileInput });
+  } else {
+    const text = e.dataTransfer.getData('text/plain');
+    if (text && /base64,/.test(text)){
+      // Guess type by header if present
+      let type = 'txt';
+      if (/epub\+zip/.test(text)) type = 'epub';
+      else if (/application\/pdf/.test(text)) type = 'pdf';
+      else if (/text\/html/.test(text)) type = 'html';
+      const item = addToLibrary(`Pasted ${type.toUpperCase()}`, type, normalizeDataUrl(text, type));
+      openFromLibrary(item.id);
+    }
+  }
+}
+function handlePaste(e){
+  const text = e.clipboardData?.getData('text/plain');
+  if (text && /base64,/.test(text)){
+    let type = 'txt';
+    if (/epub\+zip/.test(text)) type = 'epub';
+    else if (/application\/pdf/.test(text)) type = 'pdf';
+    else if (/text\/html/.test(text)) type = 'html';
+    const item = addToLibrary(`Pasted ${type.toUpperCase()}`, type, normalizeDataUrl(text, type));
+    openFromLibrary(item.id);
+  }
+}
+contentEl.addEventListener('dragover', e=>{ e.preventDefault(); });
+contentEl.addEventListener('drop', handleDrop);
+document.addEventListener('paste', handlePaste);
+
+//////////////////////
+// Library actions  //
+//////////////////////
+libList.addEventListener('click', (e)=>{
+  const openId = e.target.getAttribute('data-open');
+  const delId  = e.target.getAttribute('data-del');
+  if (openId) openFromLibrary(openId);
+  if (delId)  removeFromLibrary(delId);
+});
+clearLib.onclick = ()=>{
+  if (confirm('Clear the entire library?')) clearLibrary();
+};
+
+/////////////////////////////
+// Demo loader (same dir)  //
+/////////////////////////////
+loadDemo.onclick = async ()=>{
+  // tries to fetch ./demo.epub and ./demo.pdf if they exist
+  const tryOne = async (fname, type)=>{
     try{
-      const meta = await state.epubBook.loaded.metadata;
-      const title = meta.title || state.docName;
-      statName.textContent = title;
-    }catch{
-      statName.textContent = state.docName;
-    }
+      const res = await fetch(`./${fname}`);
+      if (!res.ok) return false;
+      const buf = await res.arrayBuffer();
+      const b64 = bytesToBase64(new Uint8Array(buf));
+      const mime = type === 'epub' ? 'application/epub+zip'
+                 : type === 'pdf'  ? 'application/pdf'
+                 : 'application/octet-stream';
+      const dataUrl = `data:${mime};base64,${b64}`;
+      const item = addToLibrary(fname, type, dataUrl);
+      await openFromLibrary(item.id);
+      return true;
+    }catch{ return false; }
+  };
+  const ok1 = await tryOne('demo.epub','epub');
+  const ok2 = await tryOne('demo.pdf','pdf');
+  if (!ok1 && !ok2){
+    alert('No demo files found in /viewer-pro/. Add demo.epub or demo.pdf.');
   }
+};
+function bytesToBase64(u8){
+  let s = ''; for (let i=0;i<u8.length;i++) s += String.fromCharCode(u8[i]);
+  return btoa(s);
+}
 
-  // ---------- Plain files ----------
-  async function openPlain(name, dataUrl, type){
-    try{
-      const body = atob(dataUrl.split(',')[1]);
-      state.type = type;
-      contentEl.innerHTML = '';
-      const pre = document.createElement(type==='html' ? 'div' : 'pre');
-      pre.style.whiteSpace = type==='html' ? 'normal' : 'pre-wrap';
-      pre.style.font = '16px/1.6 system-ui, sans-serif';
-      pre.textContent = type==='html' ? stripHtml(body) : body;
-      contentEl.appendChild(pre);
-      statProg.textContent = '—';
-      statWords.textContent = wordCountFromText(pre.innerText);
-      statStatus.textContent = 'Ready';
-      pageLabel.textContent = 'Text';
-    }catch(e){
-      statStatus.textContent = 'Error opening file';
-      contentEl.innerHTML = `<p>Failed to open file.</p>`;
-    }
-  }
-  function stripHtml(s){ const d = document.createElement('div'); d.innerHTML = s; return d.textContent||d.innerText||''; }
+//////////////////////
+// Init / defaults  //
+//////////////////////
+(function init(){
+  // load config
+  const cfg = loadJSON(LS_KEY_CFG, {});
+  if (cfg.fontPct) fontPct.value = cfg.fontPct;
+  if (cfg.fov) { fovRange.value = cfg.fov; fovRange.oninput(); }
+  if (cfg.sleepMinutes) sleepMinsInp.value = cfg.sleepMinutes;
 
-  // ---------- Zoom / Fit ----------
-  btnZoomIn.onclick = () => {
-    if (state.type === 'pdf'){ state.pdfScale = Math.min(3, state.pdfScale + 0.1); renderPDFPage(); }
-    if (state.type === 'epub'){ state.epubFontPct = Math.min(220, state.epubFontPct + 10); state.epubRend.themes.fontSize(`${state.epubFontPct}%`); saveNum('aeon:epubFont', state.epubFontPct); statZoom.textContent = `${state.epubFontPct}%`; }
-  };
-  btnZoomOut.onclick = () => {
-    if (state.type === 'pdf'){ state.pdfScale = Math.max(0.5, state.pdfScale - 0.1); renderPDFPage(); }
-    if (state.type === 'epub'){ state.epubFontPct = Math.max(70, state.epubFontPct - 10); state.epubRend.themes.fontSize(`${state.epubFontPct}%`); saveNum('aeon:epubFont', state.epubFontPct); statZoom.textContent = `${state.epubFontPct}%`; }
-  };
-  btnFitW.onclick = () => {
-    // Fit Width: PDF scale to page width; EPUB — font ~110%
-    if (state.type === 'pdf'){
-      fitPdfTo('width');
-    } else if (state.type === 'epub'){
-      state.epubFontPct = 110;
-      state.epubRend.themes.fontSize(`${state.epubFontPct}%`);
-      statZoom.textContent = `110%`;
-      saveNum('aeon:epubFont', state.epubFontPct);
-    }
-  };
-  btnFitP.onclick = () => {
-    // Fit Page: PDF scale to stage height; EPUB — font ~100%
-    if (state.type === 'pdf'){
-      fitPdfTo('page');
-    } else if (state.type === 'epub'){
-      state.epubFontPct = 100;
-      state.epubRend.themes.fontSize(`100%`);
-      statZoom.textContent = `100%`;
-      saveNum('aeon:epubFont', state.epubFontPct);
-    }
-  };
+  // save on change
+  fontPct.addEventListener('change', ()=> persistCfg());
+  fovRange.addEventListener('change', ()=> persistCfg());
+  sleepMinsInp.addEventListener('change', ()=> persistCfg());
 
-  function fitPdfTo(mode){
-    const pageArea = contentEl.getBoundingClientRect();
-    // re-render current page at scale that fits
-    state.pdf.getPage(state.pdfPage).then(page => {
-      const vw = page.getViewport({ scale: 1 });
-      const scaleW = (pageArea.width - 20) / vw.width;
-      const scaleH = (pageArea.height - 20) / vw.height;
-      state.pdfScale = mode === 'width' ? Math.max(0.5, Math.min(3, scaleW)) : Math.max(0.5, Math.min(3, scaleH));
-      renderPDFPage();
-    });
-  }
-
-  // ---------- Navigation ----------
-  btnPrev.onclick = async () => {
-    if (state.type === 'pdf' && state.pdfPage > 1){ state.pdfPage--; renderPDFPage(); }
-    else if (state.type === 'epub'){ await state.epubRend.prev(); }
-  };
-  btnNext.onclick = async () => {
-    if (state.type === 'pdf' && state.pdfPage < state.pdfPages){ state.pdfPage++; renderPDFPage(); }
-    else if (state.type === 'epub'){ await state.epubRend.next(); }
-  };
-
-  // ---------- Reader mode & Ink ----------
-  toggleReader.onchange = () => {
-    state.readerMode = toggleReader.checked;
-    document.body.classList.toggle('reader-mode', state.readerMode);
-    saveSettings();
-  };
-  toggleInk.onchange = () => {
-    state.inkOn = toggleInk.checked;
-    pageEl.classList.toggle('ink-on', state.inkOn);
-    saveSettings();
-  };
-
-  // ---------- FOV ----------
-  fovInput.oninput = () => {
-    state.fov = Number(fovInput.value);
-    stage.style.perspective = `${state.fov}px`;
-    saveSettings();
-  };
-
-  // ---------- Sleep Guard ----------
-  let lastActivity = Date.now();
-  ['click','wheel','keydown','pointermove','touchstart','scroll'].forEach(evt => {
-    document.addEventListener(evt, () => lastActivity = Date.now(), {passive:true});
-  });
-
-  btnSleep.onclick = () => {
-    if (state.sleepArmed){ resetSleepGuard(); return; }
-    const mins = Math.max(1, Math.min(120, Number(sleepMin.value)||10));
-    const interval = mins * 60 * 1000;
-    state.sleepArmed = true;
-    btnSleep.textContent = 'Stop';
-    state.sleepTimer = setInterval(() => {
-      if (Date.now() - lastActivity >= interval){ beep(); alert('⏰ Wake up! Time on page exceeded.'); lastActivity = Date.now(); }
-    }, 2000);
-  };
-  function resetSleepGuard(){
-    if (state.sleepTimer){ clearInterval(state.sleepTimer); state.sleepTimer = null; }
-    state.sleepArmed = false; btnSleep.textContent = 'Start';
-  }
-  function beep(){
-    try{
-      const ctx = new (window.AudioContext||window.webkitAudioContext)();
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type='sine'; o.frequency.value=880; o.connect(g); g.connect(ctx.destination); g.gain.value=.06;
-      o.start(); setTimeout(()=>{o.stop(); ctx.close()}, 350);
-    }catch{}
-  }
-
-  // ---------- Session timer ----------
-  setInterval(() => {
-    statTime.textContent = fmtTime(Date.now() - state.sessionStart);
-  }, 1000);
-
-  // ---------- Helpers ----------
-  function loadNum(key, def){ const v = Number(localStorage.getItem(key)); return isFinite(v)&&v>0 ? v : def; }
-  function saveNum(key, v){ localStorage.setItem(key, String(v)); }
-
-  // ---------- Init ----------
-  statZoom.textContent = '100%';
+  renderLibrary();
+  setStatus('Idle');
+  contentEl.focus();
 })();
+function persistCfg(){
+  saveJSON(LS_KEY_CFG, {
+    fontPct: Number(fontPct.value),
+    fov: Number(fovRange.value),
+    sleepMinutes: Number(sleepMinsInp.value)
+  });
+}
