@@ -1,228 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AeonSight Pro — PotSplit</title>
+  <meta charset="utf-8" />
+  <title>AeonSight Pro — Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%2300ffd1'/%3E%3C/svg%3E">
-
-  <style>
-    :root{
-      --bg:#0b0c0f;
-      --panel:#11131a;
-      --ink:#0a0c11;
-      --muted:#9aa0aa;
-      --text:#eef2ff;
-      --accent:#00ffd1;
-      --accent2:#ff4fd8;
-      --border:rgba(255,255,255,.12);
-      --glass:rgba(255,255,255,.06);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(1100px 520px at 80% -10%, rgba(255,79,216,.10), transparent 60%),
-        radial-gradient(800px 420px at 10% 10%, rgba(0,255,209,.12), transparent 60%),
-        linear-gradient(180deg,#0b0c10,#090a0d 40%, #0a0b10 100%);
-      overflow:hidden;
-    }
-    .wrap{max-width:1200px;margin:0 auto;padding:0 16px}
-
-    header{
-      position:sticky; top:0; z-index:20;
-      background:linear-gradient(180deg, rgba(10,10,14,.85), rgba(10,10,14,.35) 70%, transparent);
-      backdrop-filter:saturate(150%) blur(6px);
-      border-bottom:1px solid var(--border);
-    }
-    .nav{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:10px 0}
-    .brand{display:flex;align-items:center;gap:10px}
-    .logo{width:28px;height:28px;border-radius:8px;background:conic-gradient(from 180deg,var(--accent),var(--accent2),var(--accent));box-shadow:0 0 18px rgba(0,255,209,.28), inset 0 0 14px rgba(255,255,255,.10)}
-    .brand span{font-weight:800;letter-spacing:.2px}
-
-    .topbar{
-      display:flex; gap:8px; flex-wrap:wrap;
-      padding:10px; background:var(--panel); border-bottom:1px solid var(--border);
-    }
-    .btn, .chip, .input {
-      height:36px; border-radius:10px;
-      border:1px solid var(--border); background:var(--glass);
-      color:var(--text); font-weight:700;
-      padding:0 12px; display:inline-flex; align-items:center; gap:8px;
-    }
-    .btn:hover, .chip:hover { border-color:var(--accent) }
-    .btn.primary { background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#000; border:none }
-    .btn.small { height:32px; font-weight:600 }
-    .input { font-weight:600 }
-    .sep{width:1px;height:28px;background:var(--border);margin:0 6px}
-
-    .viewer{
-      display:grid; grid-template-columns: 300px 1fr 320px;
-      height:calc(100vh - 116px);
-    }
-    .panel{
-      overflow:auto; background:var(--panel); border-right:1px solid var(--border);
-    }
-    .panel h3{margin:14px 14px 10px; font-size:1rem}
-    .list{padding:8px}
-    .item{
-      border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;
-      background:var(--glass); display:flex; justify-content:space-between; align-items:center; gap:8px;
-    }
-    .item .meta{display:flex; flex-direction:column; gap:2px}
-    .item .title{font-weight:800}
-    .item .sub{font-size:.85rem; color:var(--muted)}
-    .item .row{display:flex; gap:6px}
-    .danger{background:#2b1014;border-color:#70313a;color:#ffb3c0}
-
-    .stage{
-      position:relative; overflow:auto; background:var(--ink);
-      perspective: 1200px; /* Field-of-view base */
-    }
-    .page{
-      margin:24px auto; padding:28px 24px; max-width:860px; min-height:70vh;
-      background:#0e1117; border:1px solid var(--border); border-radius:16px;
-      box-shadow:0 20px 80px rgba(0,0,0,.35);
-      transform-origin: 50% 0%;
-      transition: transform .2s ease;
-    }
-    .reader-mode .page{
-      background:#0c0f14;
-      line-height:1.7;
-    }
-    .content { position:relative; z-index:1; }
-    .ink-overlay{
-      position:absolute; inset:0; z-index:2; pointer-events:none; display:none;
-      background-image:
-        radial-gradient(transparent 60%, rgba(0,255,209,.08) 62%),
-        repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 2px, transparent 2px 6px);
-      mix-blend-mode: screen;
-      opacity:.9;
-    }
-    .ink-on .ink-overlay{ display:block }
-
-    .right{
-      overflow:auto; background:var(--panel); border-left:1px solid var(--border);
-    }
-    .stat{padding:12px 14px;border-bottom:1px solid var(--border)}
-    .stat b{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
-    .stat .v{font-weight:800}
-
-    .controls{display:flex;gap:8px;flex-wrap:wrap;padding:10px;border-bottom:1px solid var(--border)}
-    .range{display:flex;align-items:center;gap:8px}
-    .range input[type=range]{width:160px}
-
-    @media (max-width:1100px){
-      .viewer{grid-template-columns:1fr; grid-template-rows: 44% 56%; height:auto}
-      .panel{grid-row:2}
-      .right{grid-row:2}
-    }
-  </style>
+  <link rel="stylesheet" href="./styles.css">
 </head>
-<body class="reader-mode">
-  <header>
-    <div class="wrap nav">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <span>AeonSight Pro</span>
-      </div>
-      <div>
-        <a class="btn small" href="/">← Home</a>
-        <a class="btn small" href="/shop/shop.html">Shop</a>
-      </div>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <span class="title">AeonSight Pro</span>
     </div>
-
-    <!-- Toolbar -->
-    <div class="topbar wrap">
-      <label class="btn">
-        📂 Open
-        <input id="file-input" type="file" accept=".pdf,.epub,.txt,.html" hidden>
-      </label>
-      <button id="btn-zoom-out" class="btn">−</button>
-      <button id="btn-zoom-in" class="btn">+</button>
-      <button id="btn-fit-width" class="btn">Fit Width</button>
-      <button id="btn-fit-page" class="btn">Fit Page</button>
-
-      <span class="sep"></span>
-
-      <label class="chip">
-        <input id="toggle-reader" type="checkbox" checked style="margin-right:6px"> Reader Mode
-      </label>
-      <label class="chip">
-        <input id="toggle-ink" type="checkbox" style="margin-right:6px"> Invisible Ink
-      </label>
-
-      <span class="sep"></span>
-
-      <div class="range">
-        <span>FOV</span>
-        <input id="fov" type="range" min="800" max="2000" value="1200">
-      </div>
-
-      <span class="sep"></span>
-
-      <div class="range">
-        <span>Sleep (min)</span>
-        <input id="sleep-min" class="input" type="number" min="1" max="120" value="10" style="width:70px">
-        <button id="btn-sleep" class="btn small">Start</button>
-      </div>
-
-      <span class="sep"></span>
-
-      <div class="range">
-        <button id="btn-prev" class="btn small">◀ Prev</button>
-        <span id="page-label" class="chip" style="height:32px;align-items:center">Page 0 / 0</span>
-        <button id="btn-next" class="btn small">Next ▶</button>
-      </div>
-    </div>
+    <nav class="top-actions">
+      <a href="/" class="btn subtle">Home</a>
+      <a href="/shop/shop.html" class="btn subtle">Shop</a>
+      <button id="toggleReader" class="btn">Reader Mode</button>
+      <button id="toggleLens" class="btn">Invisible Lens</button>
+      <button id="sleepBtn" class="btn">Sleep Guard</button>
+    </nav>
   </header>
 
-  <main class="viewer">
-    <!-- Library / Files -->
-    <aside class="panel">
-      <h3 class="wrap">Library</h3>
-      <div class="list" id="lib"></div>
-      <div class="wrap" style="padding:10px 14px 24px">
-        <button id="btn-clear" class="btn danger" style="width:100%">Clear Library</button>
+  <main class="layout">
+    <!-- Library / Controls -->
+    <aside class="sidebar">
+      <div class="panel">
+        <h3>Library</h3>
+        <div class="controls">
+          <label class="file-btn">
+            <input type="file" id="fileInput" accept=".pdf,.epub,.txt,.html" multiple />
+            <span>+ Add Files</span>
+          </label>
+          <button id="loadDemo" class="btn small">Load Demo</button>
+          <button id="clearLib" class="btn small danger">Clear Library</button>
+        </div>
+        <ul id="libList" class="library"></ul>
+        <div class="hint">Tip: drag & drop files here, or paste a data URL.</div>
       </div>
-    </aside>
 
-    <!-- Reading Stage -->
-    <section class="stage" id="stage">
-      <div class="page">
-        <div class="ink-overlay"></div>
-        <div id="content" class="content">
-          <p>Load a PDF or EPUB to begin. (Try the demo buttons in the Shop if you need sample files.)</p>
+      <div class="panel">
+        <h3>View</h3>
+        <div class="rows">
+          <div class="row">
+            <button id="prevPage" class="btn small">◀ Prev</button>
+            <button id="nextPage" class="btn small">Next ▶</button>
+          </div>
+          <div class="row">
+            <button id="zoomOut" class="btn small">– Zoom</button>
+            <button id="zoomIn" class="btn small">+ Zoom</button>
+          </div>
+          <label class="row">
+            <span>FOV</span>
+            <input id="fov" type="range" min="40" max="100" value="72" />
+          </label>
+          <label class="row">
+            <span>Font %</span>
+            <input id="fontPct" type="range" min="80" max="180" value="100" />
+          </label>
+          <label class="row">
+            <span>Sleep (min)</span>
+            <input id="sleepMins" type="number" min="1" max="120" value="10" />
+          </label>
         </div>
       </div>
-    </section>
 
-    <!-- Stats / Inspector -->
-    <aside class="right">
-      <div class="stat"><b>Document</b><div class="v" id="stat-name">—</div></div>
-      <div class="stat"><b>Status</b><div class="v" id="stat-status">Idle</div></div>
-      <div class="stat"><b>Progress</b><div class="v" id="stat-progress">0%</div></div>
-      <div class="stat"><b>Words on Page</b><div class="v" id="stat-words">0</div></div>
-      <div class="stat"><b>Session Reading Time</b><div class="v" id="stat-time">0:00</div></div>
-      <div class="stat"><b>Zoom</b><div class="v" id="stat-zoom">100%</div></div>
+      <div class="panel">
+        <h3>Stats</h3>
+        <div class="stats">
+          <div><strong id="statName">–</strong></div>
+          <div>Status: <span id="statStatus">Idle</span></div>
+          <div>Progress: <span id="statProg">0%</span></div>
+          <div>Page: <span id="statPage">–</span></div>
+          <div>Session: <span id="statTime">0:00</span></div>
+          <div>Words read (est): <span id="statWords">0</span></div>
+        </div>
+      </div>
     </aside>
+
+    <!-- Stage -->
+    <section class="stage">
+      <div id="content" class="content" tabindex="0" aria-label="Reading area">
+        <div class="empty">Drop a PDF/EPUB/TXT/HTML here or click “+ Add Files”.</div>
+      </div>
+
+      <!-- Invisible Lens overlay -->
+      <div id="lens" class="lens" aria-hidden="true"></div>
+    </section>
   </main>
 
-  <!-- ✅ Dependencies (order matters) -->
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script>window.JSZip = window.JSZip || window.jszip || JSZip;</script>
+  <footer class="foot">
+    <div>© <span id="year"></span> PotSplit — AeonSight Pro</div>
+    <div class="kbd">
+      Shortcuts: ←/→ page • +/- zoom • R reader • I lens • F fullscreen • S sleep
+    </div>
+  </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3/dist/epub.min.js"></script>
-
-  <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <!-- Libs (no integrity to avoid previous blocking) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://unpkg.com/epubjs/dist/epub.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+    // PDF.js worker
+    if (window['pdfjsLib']) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
   </script>
-
-  <!-- App -->
   <script src="./pro.js"></script>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
