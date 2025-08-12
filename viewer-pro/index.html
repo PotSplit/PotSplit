@@ -2,114 +2,227 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AeonSight Pro — PotSplit</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%2300ffd1'/%3E%3C/svg%3E">
+
   <style>
     :root{
-      --bg:#0b0c0f; --card:#11131a; --muted:#9aa0aa; --text:#eef2ff;
-      --accent:#00ffd1; --accent-2:#ff4fd8; --glass:rgba(255,255,255,.06); --border:rgba(255,255,255,.12);
+      --bg:#0b0c0f;
+      --panel:#11131a;
+      --ink:#0a0c11;
+      --muted:#9aa0aa;
+      --text:#eef2ff;
+      --accent:#00ffd1;
+      --accent2:#ff4fd8;
+      --border:rgba(255,255,255,.12);
+      --glass:rgba(255,255,255,.06);
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--text);
-      background: radial-gradient(1000px 500px at 80% -10%, rgba(255,79,216,.1), transparent 60%),
-                  radial-gradient(800px 400px at 10% 10%, rgba(0,255,209,.12), transparent 60%),
-                  linear-gradient(180deg,#0b0c10,#090a0d 40%, #0a0b10 100%);}
-    header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(150%) blur(6px);
-      background:linear-gradient(180deg, rgba(10,10,14,.75), rgba(10,10,14,.35) 70%, transparent);
-      border-bottom:1px solid var(--border);padding:.8rem 1rem}
-    .wrap{max-width:1200px;margin:0 auto;padding:0 16px;display:flex;align-items:center;justify-content:space-between}
-    .brand{display:flex;gap:10px;align-items:center}
-    .logo{width:28px;height:28px;border-radius:8px;background:conic-gradient(from 180deg,var(--accent),var(--accent-2),var(--accent));box-shadow:0 0 18px rgba(0,255,209,.35), inset 0 0 12px rgba(255,255,255,.12)}
-    .tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    button,.btn{background:var(--glass);border:1px solid var(--border);color:var(--text);padding:.6rem .9rem;border-radius:10px;font-weight:700;cursor:pointer}
-    button:hover,.btn:hover{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,209,.12) inset}
-    .primary{border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#000}
-    main{display:grid;grid-template-columns:320px 1fr;gap:16px;max-width:1200px;margin:18px auto;padding:0 16px}
-    aside{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
-    .viewer{background:var(--card);border:1px solid var(--border);border-radius:14px;min-height:70vh;overflow:auto}
-    h2,h3{margin:.3rem 0 1rem}
-    .muted{color:var(--muted)}
-    .lib-list{display:flex;flex-direction:column;gap:10px;max-height:70vh;overflow:auto}
-    .lib-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:.7rem;border:1px solid var(--border);border-radius:10px;background:var(--glass)}
-    .meta{display:flex;flex-direction:column}
-    .meta small{color:var(--muted)}
-    .row{display:flex;gap:8px;align-items:center}
-    #pdfCanvas{display:block;margin:0 auto;padding:16px;background:#0f1116}
-    #epubArea{height:70vh}
-    .bar{height:8px;background:var(--glass);border:1px solid var(--border);border-radius:999px;overflow:hidden;margin:8px 0 0}
-    .bar > span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
-    @media(max-width:900px){main{grid-template-columns:1fr}}
-    .danger{background:#2a1212;border-color:#7a2b2b}
-    .danger:hover{box-shadow:0 0 0 3px rgba(255,64,64,.15) inset}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1100px 520px at 80% -10%, rgba(255,79,216,.10), transparent 60%),
+        radial-gradient(800px 420px at 10% 10%, rgba(0,255,209,.12), transparent 60%),
+        linear-gradient(180deg,#0b0c10,#090a0d 40%, #0a0b10 100%);
+      overflow:hidden;
+    }
+    .wrap{max-width:1200px;margin:0 auto;padding:0 16px}
+
+    header{
+      position:sticky; top:0; z-index:20;
+      background:linear-gradient(180deg, rgba(10,10,14,.85), rgba(10,10,14,.35) 70%, transparent);
+      backdrop-filter:saturate(150%) blur(6px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:10px 0}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{width:28px;height:28px;border-radius:8px;background:conic-gradient(from 180deg,var(--accent),var(--accent2),var(--accent));box-shadow:0 0 18px rgba(0,255,209,.28), inset 0 0 14px rgba(255,255,255,.10)}
+    .brand span{font-weight:800;letter-spacing:.2px}
+
+    .topbar{
+      display:flex; gap:8px; flex-wrap:wrap;
+      padding:10px; background:var(--panel); border-bottom:1px solid var(--border);
+    }
+    .btn, .chip, .input {
+      height:36px; border-radius:10px;
+      border:1px solid var(--border); background:var(--glass);
+      color:var(--text); font-weight:700;
+      padding:0 12px; display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn:hover, .chip:hover { border-color:var(--accent) }
+    .btn.primary { background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#000; border:none }
+    .btn.small { height:32px; font-weight:600 }
+    .input { font-weight:600 }
+    .sep{width:1px;height:28px;background:var(--border);margin:0 6px}
+
+    .viewer{
+      display:grid; grid-template-columns: 300px 1fr 320px;
+      height:calc(100vh - 116px);
+    }
+    .panel{
+      overflow:auto; background:var(--panel); border-right:1px solid var(--border);
+    }
+    .panel h3{margin:14px 14px 10px; font-size:1rem}
+    .list{padding:8px}
+    .item{
+      border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;
+      background:var(--glass); display:flex; justify-content:space-between; align-items:center; gap:8px;
+    }
+    .item .meta{display:flex; flex-direction:column; gap:2px}
+    .item .title{font-weight:800}
+    .item .sub{font-size:.85rem; color:var(--muted)}
+    .item .row{display:flex; gap:6px}
+    .danger{background:#2b1014;border-color:#70313a;color:#ffb3c0}
+
+    .stage{
+      position:relative; overflow:auto; background:var(--ink);
+      perspective: 1200px; /* Field-of-view base */
+    }
+    .page{
+      margin:24px auto; padding:28px 24px; max-width:860px; min-height:70vh;
+      background:#0e1117; border:1px solid var(--border); border-radius:16px;
+      box-shadow:0 20px 80px rgba(0,0,0,.35);
+      transform-origin: 50% 0%;
+      transition: transform .2s ease;
+    }
+    .reader-mode .page{
+      background:#0c0f14;
+      line-height:1.7;
+    }
+    .content { position:relative; z-index:1; }
+    .ink-overlay{
+      position:absolute; inset:0; z-index:2; pointer-events:none; display:none;
+      background-image:
+        radial-gradient(transparent 60%, rgba(0,255,209,.08) 62%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 2px, transparent 2px 6px);
+      mix-blend-mode: screen;
+      opacity:.9;
+    }
+    .ink-on .ink-overlay{ display:block }
+
+    .right{
+      overflow:auto; background:var(--panel); border-left:1px solid var(--border);
+    }
+    .stat{padding:12px 14px;border-bottom:1px solid var(--border)}
+    .stat b{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+    .stat .v{font-weight:800}
+
+    .controls{display:flex;gap:8px;flex-wrap:wrap;padding:10px;border-bottom:1px solid var(--border)}
+    .range{display:flex;align-items:center;gap:8px}
+    .range input[type=range]{width:160px}
+
+    @media (max-width:1100px){
+      .viewer{grid-template-columns:1fr; grid-template-rows: 44% 56%; height:auto}
+      .panel{grid-row:2}
+      .right{grid-row:2}
+    }
   </style>
 </head>
-<body>
+<body class="reader-mode">
   <header>
-    <div class="wrap">
+    <div class="wrap nav">
       <div class="brand">
         <div class="logo" aria-hidden="true"></div>
-        <strong>AeonSight Pro</strong>
+        <span>AeonSight Pro</span>
       </div>
-      <div class="tools">
-        <label class="btn">
-          📥 Import
-          <input id="fileInput" type="file" accept=".epub,application/epub+zip,application/pdf,.pdf" hidden multiple />
-        </label>
-        <button id="toggleMode" class="btn">Reader Mode: ON</button>
-        <button id="sleepGuard" class="btn">Sleep Guard ⏱</button>
-        <a class="btn" href="/shop/shop.html">← Back to Shop</a>
+      <div>
+        <a class="btn small" href="/">← Home</a>
+        <a class="btn small" href="/shop/shop.html">Shop</a>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="topbar wrap">
+      <label class="btn">
+        📂 Open
+        <input id="file-input" type="file" accept=".pdf,.epub,.txt,.html" hidden>
+      </label>
+      <button id="btn-zoom-out" class="btn">−</button>
+      <button id="btn-zoom-in" class="btn">+</button>
+      <button id="btn-fit-width" class="btn">Fit Width</button>
+      <button id="btn-fit-page" class="btn">Fit Page</button>
+
+      <span class="sep"></span>
+
+      <label class="chip">
+        <input id="toggle-reader" type="checkbox" checked style="margin-right:6px"> Reader Mode
+      </label>
+      <label class="chip">
+        <input id="toggle-ink" type="checkbox" style="margin-right:6px"> Invisible Ink
+      </label>
+
+      <span class="sep"></span>
+
+      <div class="range">
+        <span>FOV</span>
+        <input id="fov" type="range" min="800" max="2000" value="1200">
+      </div>
+
+      <span class="sep"></span>
+
+      <div class="range">
+        <span>Sleep (min)</span>
+        <input id="sleep-min" class="input" type="number" min="1" max="120" value="10" style="width:70px">
+        <button id="btn-sleep" class="btn small">Start</button>
+      </div>
+
+      <span class="sep"></span>
+
+      <div class="range">
+        <button id="btn-prev" class="btn small">◀ Prev</button>
+        <span id="page-label" class="chip" style="height:32px;align-items:center">Page 0 / 0</span>
+        <button id="btn-next" class="btn small">Next ▶</button>
       </div>
     </div>
   </header>
 
-  <main>
-    <aside>
-      <h3>Library</h3>
-      <p class="muted">Your imported EPUB/PDF files. Click a title to open. Use 🗑 to remove.</p>
-      <div id="library" class="lib-list"></div>
-      <hr style="border-color:var(--border);margin:14px 0">
-      <button id="clearLibrary" class="btn danger">Clear Library (All)</button>
+  <main class="viewer">
+    <!-- Library / Files -->
+    <aside class="panel">
+      <h3 class="wrap">Library</h3>
+      <div class="list" id="lib"></div>
+      <div class="wrap" style="padding:10px 14px 24px">
+        <button id="btn-clear" class="btn danger" style="width:100%">Clear Library</button>
+      </div>
     </aside>
 
-    <section class="viewer" id="viewer">
-      <!-- EPUB container -->
-      <div id="epubArea" style="display:none;"></div>
-      <!-- PDF canvas -->
-      <canvas id="pdfCanvas" style="display:none;"></canvas>
-
-      <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%2300ffd1'/%3E%3C/svg%3E">
-
-      <div id="hud" style="padding:12px;border-top:1px solid var(--border);display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-        <div id="status" class="muted">Ready.</div>
-        <div style="flex:1;min-width:180px">
-          <div class="bar"><span id="progressBar"></span></div>
-          <small id="progressText" class="muted">0%</small>
-        </div>
-        <div class="row">
-          <button id="prev" class="btn">← Prev</button>
-          <button id="next" class="btn">Next →</button>
+    <!-- Reading Stage -->
+    <section class="stage" id="stage">
+      <div class="page">
+        <div class="ink-overlay"></div>
+        <div id="content" class="content">
+          <p>Load a PDF or EPUB to begin. (Try the demo buttons in the Shop if you need sample files.)</p>
         </div>
       </div>
     </section>
+
+    <!-- Stats / Inspector -->
+    <aside class="right">
+      <div class="stat"><b>Document</b><div class="v" id="stat-name">—</div></div>
+      <div class="stat"><b>Status</b><div class="v" id="stat-status">Idle</div></div>
+      <div class="stat"><b>Progress</b><div class="v" id="stat-progress">0%</div></div>
+      <div class="stat"><b>Words on Page</b><div class="v" id="stat-words">0</div></div>
+      <div class="stat"><b>Session Reading Time</b><div class="v" id="stat-time">0:00</div></div>
+      <div class="stat"><b>Zoom</b><div class="v" id="stat-zoom">100%</div></div>
+    </aside>
   </main>
 
-<!-- ✅ Dependencies (order matters) -->
-<!-- JSZip MUST load before ePub.js and must be on window.JSZip -->
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script>window.JSZip = window.JSZip || window.jszip || JSZip;</script>
+  <!-- ✅ Dependencies (order matters) -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>window.JSZip = window.JSZip || window.jszip || JSZip;</script>
 
-<!-- ePub.js (0.3 line works well with JSZip global) -->
-<script src="https://cdn.jsdelivr.net/npm/epubjs@0.3/dist/epub.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3/dist/epub.min.js"></script>
 
-<!-- PDF.js core + worker -->
-<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-</script>
+  <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  </script>
 
-<!-- App logic -->
-<script src="./pro.js"></script>
-
+  <!-- App -->
+  <script src="./pro.js"></script>
 </body>
 </html>
