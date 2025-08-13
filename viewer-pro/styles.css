@@ -91,9 +91,46 @@ canvas.pdf-page{display:block;margin:0 auto 16px auto;background:#0b0c10;border:
 .foot{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-top:1px solid var(--border);color:var(--muted)}
 .kbd{opacity:.9}
 
-/* Reader mode tweaks */
-body.reader .content{background:#0b0c10}
-body.reader .stage{box-shadow:0 0 0 2px rgba(0,255,209,.08) inset}
+/* Reader Mode — distraction-free */
+body.reader .sidebar{ display:none; }
+body.reader .foot{ display:none; }
+
+body.reader .layout{
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 0 0 16px 0;
+  min-height: calc(100vh - 66px);
+}
+
+body.reader .stage{
+  border: none;
+  border-radius: 0;
+  min-height: calc(100vh - 66px);
+  background: #0b0c10;
+  box-shadow: none;
+}
+
+body.reader .content{
+  max-width: 72ch;
+  margin: 0 auto;
+  padding: 32px 24px 56px;
+  background: #0b0c10;
+  line-height: 1.85;
+  font-size: 110%;
+  transition: font-size .2s ease, line-height .2s ease, max-width .2s ease;
+}
+
+/* Slightly wider/narrower with FOV slider still respected */
+body.reader .content.narrow{ max-width: 60ch; }
+body.reader .content.wide{   max-width: 90ch; }
+
+/* Keep only the Reader button in the header during Reader Mode */
+body.reader .top-actions .btn:not(#toggleReader){ display:none; }
+
+/* Subtle focus ring on the stage while reading */
+body.reader .stage:focus-within{
+  box-shadow: 0 0 0 2px rgba(0,255,209,.18) inset;
+}
 
 /* Responsive */
 @media (max-width:1024px){
