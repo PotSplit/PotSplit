@@ -1,140 +1,86 @@
 :root{
-  --bg:#0b0c10;
-  --bg-2:#0a0d14;
-  --card:#10131a;
-  --glass:rgba(255,255,255,.06);
-  --border:rgba(255,255,255,.12);
-  --text:#eaf0ff;
-  --muted:#9aa0aa;
-  --accent:#00ffd1;
-  --accent2:#ff58da;
+  --bg: #0b0c10;
+  --bg2:#0f1117;
+  --fg: #eaf0ff;
+  --mut:#9aa4c3;
+  --pri:#00ffd1;
+  --pri2:#125bff;
+  --red:#ff5577;
+  --card:#0f1320;
+  --ring:#2a6df6;
+  --shadow: 0 6px 18px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
-  margin:0;
-  font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-  color:var(--text);
-  background:
-    radial-gradient(1000px 600px at 90% -10%, rgba(255,88,218,.12), transparent 65%),
-    radial-gradient(900px 500px at 10% 0%, rgba(0,255,209,.10), transparent 60%),
-    linear-gradient(180deg, #0b0c10, #090b10 60%, #0a0b10 100%);
+  margin:0; color:var(--fg); background:var(--bg);
+  font:15px/1.55 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
-/* Topbar */
 .topbar{
-  position:sticky;top:0;z-index:50;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:12px 16px;border-bottom:1px solid var(--border);
-  backdrop-filter:saturate(140%) blur(8px);
-  background:linear-gradient(180deg, rgba(12,14,18,.85), rgba(12,14,18,.35) 70%, transparent);
+  position:sticky; top:0; z-index:10;
+  display:flex; align-items:center; gap:.75rem; padding:.6rem 1rem;
+  background:linear-gradient(180deg,#0b0c10,#0b0c10e0 60%,#0b0c10c0);
+  border-bottom:1px solid #151929; backdrop-filter:saturate(120%) blur(4px);
 }
-.brand{display:flex;gap:10px;align-items:center}
-.logo{width:28px;height:28px;border-radius:8px;background:conic-gradient(from 180deg,var(--accent),var(--accent2),var(--accent));box-shadow:0 0 24px rgba(0,255,209,.35), inset 0 0 18px rgba(255,255,255,.12)}
-.title{font-weight:800;letter-spacing:.2px}
-.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.brand{font-weight:700; letter-spacing:.2px}
+.brand .pro{color:var(--pri); font-weight:800}
 
-/* Layout */
-.layout{display:grid;grid-template-columns:320px 1fr;gap:16px;padding:16px;min-height:calc(100vh - 66px - 52px)}
-.sidebar{display:flex;flex-direction:column;gap:16px}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
-.panel h3{margin:0 0 10px 0}
-.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.file-btn{display:inline-flex;align-items:center;gap:8px;background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-weight:700;color:var(--text);cursor:pointer}
-.file-btn input{display:none}
-
-.library{list-style:none;margin:0;padding:0;max-height:35vh;overflow:auto;border-top:1px dashed var(--border)}
-.library li{display:flex;align-items:center;justify-content:space-between;padding:10px 6px;border-bottom:1px dashed var(--border)}
-.library .meta{display:flex;flex-direction:column}
-.library .name{font-weight:700}
-.library .sub{color:var(--muted);font-size:.85rem}
-.library .actions{display:flex;gap:8px}
-.small{font-size:.9rem;padding:8px 10px}
-.danger{background:linear-gradient(90deg,#ff8a8a,#ff3d3d);color:#000;border:none}
-
-.stage{position:relative;background:var(--bg-2);border:1px solid var(--border);border-radius:14px;overflow:hidden;min-height:65vh}
-.content{position:relative;height:100%;padding:18px;overflow:auto;line-height:1.7}
-.content .empty{opacity:.6;color:var(--muted);text-align:center;margin-top:20vh}
-.content.reader{max-width:70ch;margin:0 auto}
-.content.narrow{max-width:60ch;margin:0 auto}
-.content.wide{max-width:90ch;margin:0 auto}
-canvas.pdf-page{display:block;margin:0 auto 16px auto;background:#0b0c10;border:1px solid var(--border);border-radius:8px}
-.epub-mount{min-height:70vh}
-
-/* Invisible lens */
-.lens{
-  position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .25s ease;
-  background:
-    radial-gradient(1200px 800px at 50% 0%, rgba(0,255,209,.08), transparent 60%),
-    repeating-linear-gradient(90deg, rgba(255,0,0,.18) 0 2px, rgba(0,0,0,0) 2px 8px);
-  mix-blend-mode:screen;filter:saturate(160%) contrast(105%);
-}
-.lens.on{opacity:1}
-
-/* Buttons */
+.toolbar{display:flex; flex-wrap:wrap; align-items:center; gap:.5rem}
 .btn{
-  appearance:none;cursor:pointer;
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
-  color:#000;border:0;border-radius:10px;padding:10px 14px;font-weight:800;
-  box-shadow:0 8px 30px rgba(0,255,209,.25);
+  appearance:none; border:1px solid #1d2236; background:#12172a; color:var(--fg);
+  padding:.45rem .7rem; border-radius:.55rem; cursor:pointer; box-shadow:var(--shadow);
 }
-.btn.subtle{background:var(--glass);color:var(--text);border:1px solid var(--border);box-shadow:none}
-.btn:hover{filter:brightness(.97)}
+.btn:hover{filter:brightness(1.1)}
+.btn.subtle{background:#0f1320;border-color:#1a2034}
+.btn.danger{background:#2a0f18;border-color:#3b1320;color:#ffd6df}
+.pipe{width:1px;height:26px;background:#1c243d;margin:0 .25rem}
 
-.rows{display:flex;flex-direction:column;gap:10px}
-.row{display:flex;gap:8px;align-items:center;justify-content:space-between}
-.row input[type="range"]{width:58%}
-.hint{margin-top:8px;color:var(--muted);font-size:.9rem}
-.stats{color:var(--muted);display:grid;gap:4px}
+.knob{display:inline-flex; align-items:center; gap:.4rem; color:var(--mut)}
+.knob input[type="range"]{vertical-align:middle}
+.knob input[type="number"]{width:4.5rem}
 
-/* Footer */
-.foot{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-top:1px solid var(--border);color:var(--muted)}
-.kbd{opacity:.9}
-
-/* Reader Mode — distraction-free */
-body.reader .sidebar{ display:none; }
-body.reader .foot{ display:none; }
-
-body.reader .layout{
-  grid-template-columns: 1fr;
-  gap: 0;
-  padding: 0 0 16px 0;
-  min-height: calc(100vh - 66px);
+.main{display:grid; grid-template-columns:280px 1fr; gap:0}
+.sidebar{
+  border-right:1px solid #151929; background:#0c0f1a; min-height:calc(100vh - 120px);
 }
-
-body.reader .stage{
-  border: none;
-  border-radius: 0;
-  min-height: calc(100vh - 66px);
-  background: #0b0c10;
-  box-shadow: none;
+.sidehead{padding:10px 12px; font-weight:600; color:#b7c2ea; border-bottom:1px solid #151929}
+.list{list-style:none;margin:0;padding:8px}
+.list li{
+  display:flex; justify-content:space-between; align-items:center; gap:.75rem;
+  padding:.6rem .6rem; margin-bottom:.5rem; border:1px solid #1b2136; border-radius:.6rem; background:#0f1320;
 }
+.list .name{font-weight:600}
+.list .sub{color:var(--mut); font-size:12px}
+.list .actions{display:flex; gap:.4rem}
 
-body.reader .content{
-  max-width: 72ch;
-  margin: 0 auto;
-  padding: 32px 24px 56px;
-  background: #0b0c10;
-  line-height: 1.85;
-  font-size: 110%;
-  transition: font-size .2s ease, line-height .2s ease, max-width .2s ease;
+.stage{
+  position:relative; padding:1.2rem; min-height:calc(100vh - 120px);
+  outline:none;
 }
+.stage:focus{box-shadow:0 0 0 3px var(--ring) inset; border-radius:.6rem}
+.empty{color:#9aa4c3; opacity:.8}
 
-/* Slightly wider/narrower with FOV slider still respected */
-body.reader .content.narrow{ max-width: 60ch; }
-body.reader .content.wide{   max-width: 90ch; }
+.pdf-page{display:block; margin:0 auto; border-radius:.5rem; box-shadow:var(--shadow)}
+.epub-mount{height:84vh; border-radius:.6rem; overflow:hidden}
+.stage.narrow{max-width:720px}
+.stage.wide{max-width:1200px}
 
-/* Keep only the Reader button in the header during Reader Mode */
-body.reader .top-actions .btn:not(#toggleReader){ display:none; }
-
-/* Subtle focus ring on the stage while reading */
-body.reader .stage:focus-within{
-  box-shadow: 0 0 0 2px rgba(0,255,209,.18) inset;
+.lens{
+  position:absolute; width:320px; height:120px; border-radius:10px;
+  pointer-events:none; border:2px solid #2a6df6; box-shadow:0 0 0 3000px rgba(0,0,0,.35) inset, 0 6px 20px rgba(0,0,0,.5);
+  display:none; mix-blend-mode:normal; backdrop-filter:blur(1px) brightness(120%);
 }
+.lens.on{display:block}
 
-/* Responsive */
-@media (max-width:1024px){
-  .layout{grid-template-columns:1fr}
-  .sidebar{order:2}
-  .stage{order:1;min-height:60vh}
+.status{
+  display:grid; grid-template-columns:2fr repeat(5,1fr);
+  gap:12px; padding:.6rem 1rem; border-top:1px solid #151929; background:#0b0c10;
+  color:#c6d0f5; font-size:13px;
 }
+.status strong{color:#fff}
+
+/* Reader mode */
+body.reader .sidebar, body.reader .topbar{display:none}
+body.reader .status{position:fixed; left:0; right:0; bottom:0; background:#0b0c10e6; backdrop-filter:blur(6px)}
+body.reader .stage{min-height:calc(100vh - 44px); padding:2.2rem 1.4rem; max-width:900px; margin:0 auto}
