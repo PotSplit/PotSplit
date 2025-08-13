@@ -1,6 +1,10 @@
 /* AeonSight Pro — single-file JS
-   Features: EPUB + PDF + TXT/HTML; library (localStorage); delete/clear; drag & drop; paste data URLs;
-   Reader Mode; Invisible Lens; Zoom; FOV; Font %; Sleep-Guard; Stats; Keyboard shortcuts.
+   Fixes in this drop:
+   - Inline favicon (no /favicon.ico 404)
+   - Demo now generates a valid EPUB in-memory (no /demo.* 404)
+   - EPUB opens from ArrayBuffer (no META-INF/container.xml fetch)
+   Features kept: EPUB + PDF + TXT/HTML; library; delete/clear; drag&drop; paste data URLs;
+   Reader Mode; Invisible Lens; Zoom; FOV; Font %; Sleep-Guard; Stats; Shortcuts.
 */
 
 ////////////////////
@@ -39,7 +43,6 @@ const statWords = document.getElementById('statWords');
 //////////////////////
 const LS_KEY_LIB = 'aeon:library:v2'; // [{id,name,type,dataUrl,added}]
 const LS_KEY_CFG = 'aeon:cfg';
-const LS_KEY_TIME= 'aeon:time';
 
 const state = {
   type: null,                // 'pdf' | 'epub' | 'txt' | 'html'
@@ -55,7 +58,6 @@ const state = {
   epubBook: null,
   epubRend: null,
   epubFontPct: 100,
-  epubBlobUrl: null,
 
   // Stats
   startedAt: 0,
@@ -88,13 +90,6 @@ function extOfName(name=''){
   const m = name.toLowerCase().match(/\.([a-z0-9]+)$/);
   return m ? m[1] : '';
 }
-function mimeFromExt(ext){
-  if (ext === 'pdf') return 'application/pdf';
-  if (ext === 'epub') return 'application/epub+zip';
-  if (ext === 'txt') return 'text/plain';
-  if (ext === 'html' || ext === 'htm') return 'text/html';
-  return 'application/octet-stream';
-}
 function fileToDataUrl(file){
   return new Promise((res, rej)=>{
     const fr = new FileReader();
@@ -103,16 +98,11 @@ function fileToDataUrl(file){
     fr.readAsDataURL(file);
   });
 }
-
-// Normalize odd data strings to proper data: URLs
 function normalizeDataUrl(u, type){
   if (!u) return u;
   if (/^(data:|blob:|https?:)/i.test(u)) return u;
-
-  // Most common case we saw: "...application/epub+zip;base64,<...>" without "data:"
   const m = u.match(/([a-z0-9.+-]+\/[a-z0-9.+-]+);base64,([A-Za-z0-9+/=]+)$/i);
   if (m) return `data:${m[1]};base64,${m[2]}`;
-
   const idx = u.indexOf('base64,');
   if (idx !== -1) {
     const b64 = u.slice(idx + 7);
@@ -125,19 +115,13 @@ function normalizeDataUrl(u, type){
   }
   return u;
 }
-
 function dataUrlToUint8(dataUrl){
-  const base64 = dataUrl.split(',')[1] || dataUrl; // tolerate already-base64 chunk
+  const base64 = dataUrl.split(',')[1] || dataUrl;
   const bin = atob(base64);
   const len = bin.length;
   const bytes = new Uint8Array(len);
   for (let i=0;i<len;i++) bytes[i] = bin.charCodeAt(i);
   return bytes;
-}
-function dataUrlToBlobUrl(dataUrl, mime='application/octet-stream'){
-  const u8 = dataUrlToUint8(dataUrl);
-  const blob = new Blob([u8], { type: mime });
-  return URL.createObjectURL(blob);
 }
 
 //////////////////////
@@ -165,7 +149,6 @@ function clearLibrary(){
   saveJSON(LS_KEY_LIB, []);
   renderLibrary();
 }
-
 function renderLibrary(){
   const lib = getLibrary();
   libList.innerHTML = '';
@@ -194,9 +177,10 @@ function resetDoc(){
   state.pdfPage = 1;
 
   // EPUB cleanup
-  if (state.epubRend){ try{ state.epubRend.destroy(); } catch{} state.epubRend = null; }
-  if (state.epubBook){ try{ state.epubBook.destroy(); } catch{} state.epubBook = null; }
-  if (state.epubBlobUrl){ URL.revokeObjectURL(state.epubBlobUrl); state.epubBlobUrl = null; }
+  try { state.epubRend?.destroy(); } catch{}
+  try { state.epubBook?.destroy?.(); } catch{}
+  state.epubRend = null;
+  state.epubBook = null;
 
   // Stats
   state.seconds = 0;
@@ -216,12 +200,7 @@ function updateStats(){
   statTime.textContent = fmtTime(state.seconds);
   statWords.textContent = String(state.wordsRead);
 }
-
-function tickTimer(){
-  state.seconds += 1;
-  updateStats();
-}
-setInterval(tickTimer, 1000);
+setInterval(()=>{ state.seconds += 1; updateStats(); }, 1000);
 
 //////////////////////
 // Sleep Guard beep //
@@ -318,8 +297,7 @@ async function renderPDFPage(){
   statProg.textContent = `${Math.round((state.pdfPage/state.pdfDoc.numPages)*100)}%`;
   statPage.textContent = `${state.pdfPage}/${state.pdfDoc.numPages}`;
 
-  // Estimate words by page turn
-  state.wordsRead += Math.round(280 * 0.9); // rough avg
+  state.wordsRead += Math.round(280 * 0.9);
   kickSleepGuard();
 }
 
@@ -328,11 +306,11 @@ async function openEPUB(name, dataUrl){
     if (!window['ePub']) throw new Error('ePub.js missing');
     if (!window['JSZip']) throw new Error('JSZip missing (EPUB needs JSZip)');
 
-    // Use blob URL so ePub.js never tries to fetch relative paths
-    if (state.epubBlobUrl) URL.revokeObjectURL(state.epubBlobUrl);
-    state.epubBlobUrl = dataUrlToBlobUrl(dataUrl, 'application/epub+zip');
+    // IMPORTANT: open from ArrayBuffer (no network fetches)
+    const bytes = dataUrlToUint8(dataUrl);
+    state.epubBook = ePub();
+    await state.epubBook.open(bytes.buffer, 'binary');
 
-    state.epubBook = ePub(state.epubBlobUrl);
     contentEl.innerHTML = '';
     const mount = document.createElement('div');
     mount.className = 'epub-mount';
@@ -345,7 +323,7 @@ async function openEPUB(name, dataUrl){
       allowScriptedContent: true
     });
 
-    // Themes & font size
+    // Theme & font size
     state.epubFontPct = Number(fontPct.value || 100);
     state.epubRend.themes.register('aeon', {
       'body': { 'color':'#eaf0ff','background':'#0b0c10','line-height':'1.7', 'font-size':`${state.epubFontPct}%` },
@@ -355,13 +333,11 @@ async function openEPUB(name, dataUrl){
 
     await state.epubRend.display();
 
-    // Update progress
     state.epubRend.on('relocated', (loc)=>{
       try{
         const pct = Math.round(loc.start.percentage * 100);
         statProg.textContent = `${pct}%`;
         statPage.textContent = `${loc.start.displayed.page}/${loc.start.displayed.total}`;
-        // Estimate words per relocation
         state.wordsRead += Math.round(250 * 0.9);
         kickSleepGuard();
       }catch{}
@@ -377,12 +353,10 @@ async function openEPUB(name, dataUrl){
 
 async function openPlain(name, dataUrl, type){
   try{
-    // decode base64
     const bytes = dataUrlToUint8(dataUrl);
     const text = new TextDecoder('utf-8').decode(bytes);
-
-    // very-safe render: strip tags for html
     const safe = (type === 'html') ? stripHtml(text) : text;
+
     contentEl.innerHTML = '';
     const pre = document.createElement('div');
     pre.style.whiteSpace = 'pre-wrap';
@@ -390,7 +364,6 @@ async function openPlain(name, dataUrl, type){
     pre.textContent = safe;
     contentEl.appendChild(pre);
 
-    // words & stats
     const words = safe.trim().split(/\s+/g).filter(Boolean).length;
     state.wordsRead += words;
     statProg.textContent = '—';
@@ -456,7 +429,6 @@ zoomOut.onclick = async ()=>{
 
 fovRange.oninput = ()=>{
   state.fov = Number(fovRange.value);
-  // FOV as max width for reader columns
   if (state.fov <= 56) {
     contentEl.classList.add('narrow');
     contentEl.classList.remove('wide');
@@ -478,16 +450,9 @@ fontPct.oninput = ()=>{
   }
 };
 
-toggleReader.onclick = ()=>{
-  document.body.classList.toggle('reader');
-};
-toggleLens.onclick = ()=>{
-  lensEl.classList.toggle('on');
-};
-sleepBtn.onclick = ()=>{
-  kickSleepGuard();
-  setStatus(`Sleep in ${state.sleepMinutes}m`);
-};
+toggleReader.onclick = ()=>{ document.body.classList.toggle('reader'); };
+toggleLens.onclick   = ()=>{ lensEl.classList.toggle('on'); };
+sleepBtn.onclick     = ()=>{ kickSleepGuard(); setStatus(`Sleep in ${state.sleepMinutes}m`); };
 
 document.addEventListener('keydown', async (e)=>{
   if (e.target && (e.target.tagName === 'INPUT')) return;
@@ -525,7 +490,6 @@ function handleDrop(e){
   } else {
     const text = e.dataTransfer.getData('text/plain');
     if (text && /base64,/.test(text)){
-      // Guess type by header if present
       let type = 'txt';
       if (/epub\+zip/.test(text)) type = 'epub';
       else if (/application\/pdf/.test(text)) type = 'pdf';
@@ -564,47 +528,94 @@ clearLib.onclick = ()=>{
 };
 
 /////////////////////////////
-// Demo loader (same dir)  //
+// Demo: build EPUB in RAM //
 /////////////////////////////
 loadDemo.onclick = async ()=>{
-  // tries to fetch ./demo.epub and ./demo.pdf if they exist
-  const tryOne = async (fname, type)=>{
-    try{
-      const res = await fetch(`./${fname}`);
-      if (!res.ok) return false;
-      const buf = await res.arrayBuffer();
-      const b64 = bytesToBase64(new Uint8Array(buf));
-      const mime = type === 'epub' ? 'application/epub+zip'
-                 : type === 'pdf'  ? 'application/pdf'
-                 : 'application/octet-stream';
-      const dataUrl = `data:${mime};base64,${b64}`;
-      const item = addToLibrary(fname, type, dataUrl);
-      await openFromLibrary(item.id);
-      return true;
-    }catch{ return false; }
-  };
-  const ok1 = await tryOne('demo.epub','epub');
-  const ok2 = await tryOne('demo.pdf','pdf');
-  if (!ok1 && !ok2){
-    alert('No demo files found in /viewer-pro/. Add demo.epub or demo.pdf.');
-  }
+  if (!window.JSZip){ alert('JSZip missing'); return; }
+  const dataUrl = await buildSampleEpub();
+  const item = addToLibrary('Sample.epub', 'epub', dataUrl);
+  openFromLibrary(item.id);
 };
-function bytesToBase64(u8){
-  let s = ''; for (let i=0;i<u8.length;i++) s += String.fromCharCode(u8[i]);
-  return btoa(s);
+
+// Build a tiny but valid EPUB 3 using JSZip (no network).
+async function buildSampleEpub(){
+  const zip = new JSZip();
+  // Required uncompressed mimetype first
+  zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+
+  const uuid = (self.crypto?.randomUUID?.() || ('urn:uuid:'+Date.now()));
+  zip.file('META-INF/container.xml',
+`<?xml version="1.0" encoding="UTF-8"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles>
+    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+  </rootfiles>
+</container>`);
+
+  const style = `
+  body{color:#eaf0ff;background:#0b0c10;line-height:1.7;font-family: serif;}
+  h1{color:#00ffd1;margin:0 0 .5em 0}
+  `;
+
+  zip.file('OEBPS/nav.xhtml',
+`<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en">
+  <head><title>Nav</title></head>
+  <body>
+    <nav epub:type="toc" id="toc">
+      <ol><li><a href="chapter1.xhtml">Hello</a></li></ol>
+    </nav>
+  </body>
+</html>`);
+
+  zip.file('OEBPS/chapter1.xhtml',
+`<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>Hello</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+  </head>
+  <body>
+    <h1>AeonSight Sample</h1>
+    <p>This EPUB was generated on the fly. Try Reader Mode (R), zoom (+/-), and the lens (I).</p>
+    <p>Drop your own EPUB/PDF any time on the stage.</p>
+  </body>
+</html>`);
+
+  zip.file('OEBPS/style.css', style);
+
+  zip.file('OEBPS/content.opf',
+`<?xml version="1.0" encoding="utf-8"?>
+<package version="3.0" unique-identifier="pub-id" xmlns="http://www.idpf.org/2007/opf">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="pub-id">${uuid}</dc:identifier>
+    <dc:title>AeonSight Sample</dc:title>
+    <meta property="dcterms:modified">${new Date().toISOString().slice(0,19)}Z</meta>
+  </metadata>
+  <manifest>
+    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+    <item id="chap1" href="chapter1.xhtml" media-type="application/xhtml+xml"/>
+    <item id="css" href="style.css" media-type="text/css"/>
+  </manifest>
+  <spine>
+    <itemref idref="chap1"/>
+  </spine>
+</package>`);
+
+  const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+  const dataUrl = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(blob); });
+  return dataUrl;
 }
 
 //////////////////////
 // Init / defaults  //
 //////////////////////
 (function init(){
-  // load config
   const cfg = loadJSON(LS_KEY_CFG, {});
   if (cfg.fontPct) fontPct.value = cfg.fontPct;
   if (cfg.fov) { fovRange.value = cfg.fov; fovRange.oninput(); }
   if (cfg.sleepMinutes) sleepMinsInp.value = cfg.sleepMinutes;
 
-  // save on change
   fontPct.addEventListener('change', ()=> persistCfg());
   fovRange.addEventListener('change', ()=> persistCfg());
   sleepMinsInp.addEventListener('change', ()=> persistCfg());
