@@ -1,14 +1,17 @@
-// sw.js — simple offline cache
+// sw.js — simple offline cache (same-origin only)
 const CACHE = 'aeonsight-v1';
 const CORE = [
-  '/',            // adjust if not served from domain root
-  '/index.html',  // update paths to match your build
-  '/styles.css',
-  '/app.js'
+  'index.html',
+  'styles.css',
+  'pro.js',
+  'manifest.webmanifest'
+  // If you later host vendor libs locally, add them here to pre-cache.
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', event => {
@@ -19,29 +22,29 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Network-first for HTML, cache-first for others
+// Network-first for HTML, cache-first for everything else
 self.addEventListener('fetch', event => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Only handle same-origin GET
+  // Only handle same-origin GET requests
   if (req.method !== 'GET' || url.origin !== location.origin) return;
 
   if (req.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(req).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(req, copy));
+        caches.open(CACHE).then(c => c.put(req, res.clone()));
         return res;
-      }).catch(() => caches.match(req).then(r => r || caches.match('/index.html')))
+      }).catch(() =>
+        caches.match(req).then(r => r || caches.match('index.html'))
+      )
     );
     return;
   }
 
   event.respondWith(
     caches.match(req).then(hit => hit || fetch(req).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(req, copy));
+      caches.open(CACHE).then(c => c.put(req, res.clone()));
       return res;
     }))
   );
