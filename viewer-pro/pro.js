@@ -462,9 +462,14 @@ fontPct.oninput = ()=>{
   }
 };
 
-toggleReader.onclick = ()=>{ document.body.classList.toggle('reader'); };
-toggleLens.onclick   = ()=>{ lensEl.classList.toggle('on'); };
-sleepBtn.onclick     = ()=>{ kickSleepGuard(); setStatus(`Sleep in ${state.sleepMinutes}m`); };
+toggleReader.onclick = ()=>{
+  const on = document.body.classList.toggle('reader');
+  toggleReader.textContent = on ? 'Exit Reader Mode' : 'Reader Mode';
+  toggleReader.setAttribute('aria-pressed', on ? 'true' : 'false');
+  persistCfg(); // save the current reader state
+  // Nudge focus to the content for keyboard reading
+  contentEl.focus({ preventScroll: false });
+};
 
 allowScriptsChk.onchange = ()=>{
   persistCfg();
@@ -648,5 +653,6 @@ function persistCfg(){
     fov: Number(fovRange.value),
     sleepMinutes: Number(sleepMinsInp.value),
     allowScripts: !!allowScriptsChk.checked
+    reader: document.body.classList.contains('reader') // <— NEW 
   });
 }
