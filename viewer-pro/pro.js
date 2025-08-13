@@ -1,10 +1,8 @@
-/* AeonSight Pro — single-file JS
-   Fixes in this drop:
-   - Inline favicon (no /favicon.ico 404)
-   - Demo now generates a valid EPUB in-memory (no /demo.* 404)
-   - EPUB opens from ArrayBuffer (no META-INF/container.xml fetch)
-   Features kept: EPUB + PDF + TXT/HTML; library; delete/clear; drag&drop; paste data URLs;
-   Reader Mode; Invisible Lens; Zoom; FOV; Font %; Sleep-Guard; Stats; Shortcuts.
+/* AeonSight Pro — hardened sandbox
+   - Default: EPUB scripts BLOCKED to avoid DevTools “allow-scripts + allow-same-origin” warning
+   - Toggle added: “Allow EPUB scripts (less safe)”
+   - Force the iframe sandbox according to toggle
+   - PDF page replaceChildren() to avoid “deferred DOM Node” DevTools gripe
 */
 
 ////////////////////
@@ -28,6 +26,8 @@ const toggleReader = document.getElementById('toggleReader');
 const toggleLens   = document.getElementById('toggleLens');
 const sleepBtn     = document.getElementById('sleepBtn');
 const sleepMinsInp = document.getElementById('sleepMins');
+
+const allowScriptsChk = document.getElementById('allowScripts');
 
 const lensEl    = document.getElementById('lens');
 
@@ -273,7 +273,6 @@ async function openPDF(name, dataUrl){
     const loadingTask = pdfjsLib.getDocument({ data: bytes });
     state.pdfDoc = await loadingTask.promise;
     state.pdfPage = clamp(state.pdfPage, 1, state.pdfDoc.numPages);
-    contentEl.innerHTML = '';
     await renderPDFPage();
     setStatus('Ready');
   }catch(err){
@@ -290,8 +289,8 @@ async function renderPDFPage(){
   const ctx = canvas.getContext('2d');
   canvas.width = viewport.width;
   canvas.height = viewport.height;
-  contentEl.innerHTML = '';
-  contentEl.appendChild(canvas);
+  // Replace instead of wiping (avoids DevTools deferred-node warning)
+  contentEl.replaceChildren(canvas);
   await page.render({ canvasContext: ctx, viewport }).promise;
 
   statProg.textContent = `${Math.round((state.pdfPage/state.pdfDoc.numPages)*100)}%`;
@@ -301,12 +300,23 @@ async function renderPDFPage(){
   kickSleepGuard();
 }
 
+function forceEpubSandbox(allowScripts){
+  // If scripts ON: force sandbox="allow-scripts" (unique origin, safer than allowing both)
+  // If scripts OFF: force sandbox="allow-same-origin" (no scripts; resources still load)
+  const wanted = allowScripts ? 'allow-scripts' : 'allow-same-origin';
+  // Update any iframes under our mount
+  const frs = contentEl.querySelectorAll('iframe');
+  frs.forEach(fr => fr.setAttribute('sandbox', wanted));
+}
+
 async function openEPUB(name, dataUrl){
   try{
     if (!window['ePub']) throw new Error('ePub.js missing');
     if (!window['JSZip']) throw new Error('JSZip missing (EPUB needs JSZip)');
 
-    // IMPORTANT: open from ArrayBuffer (no network fetches)
+    const allowScripts = !!allowScriptsChk?.checked;
+
+    // Open from ArrayBuffer (no network fetches)
     const bytes = dataUrlToUint8(dataUrl);
     state.epubBook = ePub();
     await state.epubBook.open(bytes.buffer, 'binary');
@@ -320,7 +330,7 @@ async function openEPUB(name, dataUrl){
       width: '100%',
       height: '84vh',
       spread: 'none',
-      allowScriptedContent: true
+      allowScriptedContent: allowScripts // default false via checkbox (unchecked)
     });
 
     // Theme & font size
@@ -331,7 +341,10 @@ async function openEPUB(name, dataUrl){
     });
     state.epubRend.themes.select('aeon');
 
+    // First display, then force sandbox to avoid allow-scripts+allow-same-origin combo.
     await state.epubRend.display();
+    forceEpubSandbox(allowScripts);
+    state.epubRend.on('rendered', ()=> forceEpubSandbox(allowScripts));
 
     state.epubRend.on('relocated', (loc)=>{
       try{
@@ -357,12 +370,11 @@ async function openPlain(name, dataUrl, type){
     const text = new TextDecoder('utf-8').decode(bytes);
     const safe = (type === 'html') ? stripHtml(text) : text;
 
-    contentEl.innerHTML = '';
     const pre = document.createElement('div');
     pre.style.whiteSpace = 'pre-wrap';
     pre.style.wordBreak = 'break-word';
     pre.textContent = safe;
-    contentEl.appendChild(pre);
+    contentEl.replaceChildren(pre);
 
     const words = safe.trim().split(/\s+/g).filter(Boolean).length;
     state.wordsRead += words;
@@ -454,6 +466,12 @@ toggleReader.onclick = ()=>{ document.body.classList.toggle('reader'); };
 toggleLens.onclick   = ()=>{ lensEl.classList.toggle('on'); };
 sleepBtn.onclick     = ()=>{ kickSleepGuard(); setStatus(`Sleep in ${state.sleepMinutes}m`); };
 
+allowScriptsChk.onchange = ()=>{
+  persistCfg();
+  // Re-open current EPUB under the new sandbox policy
+  if (state.type === 'epub' && state.currentId) openFromLibrary(state.currentId);
+};
+
 document.addEventListener('keydown', async (e)=>{
   if (e.target && (e.target.tagName === 'INPUT')) return;
   if (e.key === 'ArrowRight'){ nextBtn.click(); }
@@ -537,10 +555,8 @@ loadDemo.onclick = async ()=>{
   openFromLibrary(item.id);
 };
 
-// Build a tiny but valid EPUB 3 using JSZip (no network).
 async function buildSampleEpub(){
   const zip = new JSZip();
-  // Required uncompressed mimetype first
   zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
 
   const uuid = (self.crypto?.randomUUID?.() || ('urn:uuid:'+Date.now()));
@@ -615,6 +631,8 @@ async function buildSampleEpub(){
   if (cfg.fontPct) fontPct.value = cfg.fontPct;
   if (cfg.fov) { fovRange.value = cfg.fov; fovRange.oninput(); }
   if (cfg.sleepMinutes) sleepMinsInp.value = cfg.sleepMinutes;
+  // NEW: remember EPUB scripts toggle; default false (safer)
+  if (typeof cfg.allowScripts === 'boolean') allowScriptsChk.checked = cfg.allowScripts;
 
   fontPct.addEventListener('change', ()=> persistCfg());
   fovRange.addEventListener('change', ()=> persistCfg());
@@ -628,6 +646,7 @@ function persistCfg(){
   saveJSON(LS_KEY_CFG, {
     fontPct: Number(fontPct.value),
     fov: Number(fovRange.value),
-    sleepMinutes: Number(sleepMinsInp.value)
+    sleepMinutes: Number(sleepMinsInp.value),
+    allowScripts: !!allowScriptsChk.checked
   });
 }
