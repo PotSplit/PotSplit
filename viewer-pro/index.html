@@ -68,6 +68,15 @@
       </div>
 
       <div class="panel">
+        <h3>Security</h3>
+        <label class="row" title="Safer default: EPUB scripts are blocked so the iframe sandbox stays strict (no DevTools warning). Enable only if a specific book needs JS.">
+          <input id="allowScripts" type="checkbox" />
+          <span>Allow EPUB scripts (less safe)</span>
+        </label>
+        <div class="hint">Disabling this removes <code>allow-scripts</code> or <code>allow-same-origin</code> overlap so the iframe can’t “escape” its sandbox.</div>
+      </div>
+
+      <div class="panel">
         <h3>Stats</h3>
         <div class="stats">
           <div><strong id="statName">–</strong></div>
@@ -98,7 +107,7 @@
     </div>
   </footer>
 
-  <!-- Libs (no integrity to avoid earlier blocking) -->
+  <!-- Libs (no SRI to avoid your earlier integrity block) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://unpkg.com/epubjs/dist/epub.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
