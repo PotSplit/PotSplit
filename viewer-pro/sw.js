@@ -1,11 +1,11 @@
 // sw.js — simple offline cache (same-origin only)
-const CACHE = 'aeonsight-v1';
+// Bump the version to force-update cached files after you paste new code.
+const CACHE = 'aeonsight-v2';
 const CORE = [
   'index.html',
   'styles.css',
   'pro.js',
   'manifest.webmanifest'
-  // If you later host vendor libs locally, add them here to pre-cache.
 ];
 
 self.addEventListener('install', event => {
@@ -26,8 +26,6 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const req = event.request;
   const url = new URL(req.url);
-
-  // Only handle same-origin GET requests
   if (req.method !== 'GET' || url.origin !== location.origin) return;
 
   if (req.headers.get('accept')?.includes('text/html')) {
