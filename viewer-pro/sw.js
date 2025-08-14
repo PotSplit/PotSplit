@@ -1,6 +1,6 @@
-// sw.js — offline cache for AeonSight Pro
+// sw.js — offline cache for AeonSight Pro (fixed clone timing)
 // Bump version to refresh cache after updates
-const CACHE = 'aeonsight-v3';
+const CACHE = 'aeonsight-v4';
 const CORE = [
   'index.html',
   'styles.css',
@@ -10,7 +10,9 @@ const CORE = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then(c => c.addAll(CORE))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -22,28 +24,45 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Network-first for HTML, cache-first for others
+// Network-first for navigations/HTML, cache-first for other same-origin GETs
 self.addEventListener('fetch', event => {
   const req = event.request;
   const url = new URL(req.url);
+
+  // Only handle same-origin GETs
   if (req.method !== 'GET' || url.origin !== location.origin) return;
 
-  if (req.headers.get('accept')?.includes('text/html')) {
-    event.respondWith(
-      fetch(req).then(res => {
-        caches.open(CACHE).then(c => c.put(req, res.clone()));
-        return res;
-      }).catch(() =>
-        caches.match(req).then(r => r || caches.match('index.html'))
-      )
-    );
-    return;
-  }
-
-  event.respondWith(
-    caches.match(req).then(hit => hit || fetch(req).then(res => {
-      caches.open(CACHE).then(c => c.put(req, res.clone()));
+  const networkFirst = async () => {
+    const cache = await caches.open(CACHE);
+    try {
+      const res = await fetch(req);
+      // Clone immediately, then cache via waitUntil so body isn't consumed
+      const copy = res.clone();
+      event.waitUntil(cache.put(req, copy));
       return res;
-    }))
-  );
+    } catch (err) {
+      // Fallback to cache (or index.html for SPA navigations)
+      const cached = await cache.match(req);
+      return cached || cache.match('index.html');
+    }
+  };
+
+  const cacheFirst = async () => {
+    const cache = await caches.open(CACHE);
+    const cached = await cache.match(req);
+    if (cached) return cached;
+
+    const res = await fetch(req);
+    // Clone immediately before returning
+    const copy = res.clone();
+    event.waitUntil(cache.put(req, copy));
+    return res;
+  };
+
+  // Prefer mode=navigate, but keep Accept sniff as a backup
+  if (req.mode === 'navigate' || req.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(networkFirst());
+  } else {
+    event.respondWith(cacheFirst());
+  }
 });
