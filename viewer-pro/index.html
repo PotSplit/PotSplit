@@ -2,92 +2,153 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AeonSight Pro</title>
 
-  <!-- PWA bits -->
-  <meta name="theme-color" content="#0b0c10" />
+  <!-- Favicon (no 404) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Crect rx='10' width='48' height='48' fill='%2300ffd1'/%3E%3Cpath d='M12 31l6-14 6 14 6-14 6 14' fill='none' stroke='%230b0c10' stroke-width='3'/%3E%3C/svg%3E" />
+
   <link rel="manifest" href="manifest.webmanifest" />
-  <!-- Inline favicon (prevents 404) -->
-  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="%2300ffd1"/><stop offset="1" stop-color="%23125bff"/></linearGradient></defs><rect width="64" height="64" rx="12" fill="%230b0c10"/><path d="M18 44l14-24 14 24" stroke="url(%23g)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>' />
-
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- Vendor libs (CDN) -->
+  <!-- PDF.js (v3.x) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+  <script>
+    // Configure worker right after pdf.js loads
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      }
+    });
+  </script>
+  <!-- JSZip (for in-memory EPUB demo & future utilities) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <!-- ePub.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.99/epub.min.js" defer></script>
 </head>
-<body>
+<body class="theme-dark font-serif">
+
   <header class="topbar">
-    <div class="brand">AeonSight <span class="pro">Pro</span></div>
+    <div class="brand">
+      <span class="logo">A</span>
+      <strong>AeonSight Pro</strong>
+    </div>
 
-    <div class="toolbar">
-      <label class="btn">
-        <input id="fileInput" type="file" accept=".epub,.pdf,.txt,.html" multiple hidden />
-        + Add files
+    <div class="group">
+      <label class="btn file">
+        <input id="fileInput" type="file" accept=".pdf,.epub,.txt,.html" multiple />
+        Add Files
       </label>
-      <button id="loadDemo" class="btn subtle">Sample EPUB</button>
-      <button id="clearLib" class="btn danger">Clear library</button>
-      <span class="pipe"></span>
+      <button id="loadDemo" class="btn">Load Demo EPUB</button>
+      <button id="clearLib" class="btn danger">Clear Library</button>
+    </div>
 
-      <button id="prevPage" class="btn">◀</button>
-      <button id="nextPage" class="btn">▶</button>
-      <button id="zoomOut" class="btn">−</button>
-      <button id="zoomIn" class="btn">+</button>
-
-      <label class="knob">FOV
-        <input id="fov" type="range" min="48" max="96" value="72" />
-      </label>
-      <label class="knob">Font
-        <input id="fontPct" type="range" min="80" max="180" value="100" />
-      </label>
-
-      <span class="pipe"></span>
-      <button id="toggleReader" class="btn">Reader Mode</button>
-      <button id="toggleLens" class="btn">Lens</button>
-
-      <label class="knob">Sleep (min)
-        <input id="sleepMins" type="number" min="1" max="120" value="10" />
-      </label>
-      <button id="sleepBtn" class="btn subtle" title="Test alert">Beep</button>
-
-      <label class="knob" title="Lets EPUB run its own JS (less safe). Leave off if unsure.">
+    <div class="group">
+      <label class="chk">
         <input id="allowScripts" type="checkbox" />
-        Allow EPUB scripts (less safe)
+        <span>Allow EPUB scripts (less safe)</span>
       </label>
+      <button id="toggleReader" class="btn">Reader Mode</button>
     </div>
   </header>
 
-  <main class="main">
+  <nav class="subbar">
+    <div class="group">
+      <button id="prevPage" class="btn subtle" title="Left Arrow">◀</button>
+      <button id="nextPage" class="btn subtle" title="Right Arrow">▶</button>
+      <button id="zoomOut" class="btn subtle" title="-">−</button>
+      <button id="zoomIn"  class="btn subtle" title="+">＋</button>
+      <label>Font <input id="fontPct" type="range" min="80" max="180" value="100"></label>
+      <label>FOV <input id="fov" type="range" min="40" max="120" value="72"></label>
+    </div>
+
+    <div class="group">
+      <label>Theme
+        <select id="themeSel">
+          <option value="dark" selected>Dark</option>
+          <option value="sepia">Sepia</option>
+          <option value="light">Light</option>
+        </select>
+      </label>
+      <label>Font
+        <select id="fontSel">
+          <option value="serif" selected>Serif</option>
+          <option value="sans">Sans</option>
+          <option value="dys">Dyslexic</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="group">
+      <input id="searchInput" class="input" type="search" placeholder="Search in EPUB chapter…" />
+      <button id="searchPrev" class="btn subtle">Prev</button>
+      <button id="searchNext" class="btn subtle">Next</button>
+      <button id="clearSearch" class="btn subtle">Clear</button>
+    </div>
+
+    <div class="group">
+      <button id="ttsPlay"  class="btn subtle">Read Aloud ▶</button>
+      <button id="ttsPause" class="btn subtle">Pause ⏸</button>
+      <button id="ttsStop"  class="btn subtle">Stop ⏹</button>
+      <label>Rate <input id="ttsRate" type="range" min="0.5" max="2" step="0.1" value="1"></label>
+    </div>
+
+    <div class="group">
+      <button id="addBm" class="btn">Add Bookmark</button>
+      <button id="toggleLens" class="btn subtle">Lens</button>
+      <label>Sleep <input id="sleepMins" type="number" value="10" min="1" max="120" class="num" /> min</label>
+    </div>
+  </nav>
+
+  <main class="shell">
     <aside class="sidebar">
-      <div class="sidehead">Library</div>
-      <ul id="libList" class="list"></ul>
+      <div class="tabs">
+        <button class="tab on"   data-panel="libPanel">Library</button>
+        <button class="tab"      data-panel="tocPanel">TOC</button>
+        <button class="tab"      data-panel="bmPanel">Bookmarks</button>
+      </div>
+
+      <section id="libPanel" class="panel on">
+        <ul id="libList" class="list"></ul>
+        <div class="row mt">
+          <button id="exportLib" class="btn subtle">Export Library</button>
+          <label class="btn file subtle">
+            <input id="importLib" type="file" accept=".json" />
+            Import Library
+          </label>
+        </div>
+      </section>
+
+      <section id="tocPanel" class="panel">
+        <ul id="tocList" class="list"></ul>
+      </section>
+
+      <section id="bmPanel" class="panel">
+        <ul id="bmList" class="list"></ul>
+      </section>
     </aside>
 
-    <section id="content" class="stage" tabindex="0" aria-label="Reading area">
-      <div class="empty">Drop an EPUB/PDF/TXT/HTML here or use “+ Add files”.</div>
+    <section class="stage">
+      <div id="content" class="content" tabindex="0" aria-label="Reader viewport"></div>
       <div id="lens" class="lens" aria-hidden="true"></div>
+
+      <!-- Tap zones for next/prev -->
+      <button class="tap left"  id="tapLeft"  aria-label="Previous page/section"></button>
+      <button class="tap right" id="tapRight" aria-label="Next page/section"></button>
     </section>
   </main>
 
-  <footer class="status">
-    <div><strong id="statName">—</strong></div>
-    <div>Status: <span id="statStatus">Idle</span></div>
-    <div>Progress: <span id="statProg">—</span></div>
-    <div>Page: <span id="statPage">—</span></div>
-    <div>Time: <span id="statTime">0:00</span></div>
-    <div>Words: <span id="statWords">0</span></div>
+  <footer class="statusbar">
+    <span id="statName">—</span>
+    <span id="statStatus">Idle</span>
+    <span id="statProg">—</span>
+    <span id="statPage">—</span>
+    <span id="statTime">0:00</span>
+    <span id="statWords">0</span>
   </footer>
 
-  <!-- Vendor libs (CDN, no integrity to avoid mismatches) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>
-    // Point PDF.js worker to CDN copy
-    if (window.pdfjsLib) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-    }
-  </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
-
-  <!-- App -->
   <script src="pro.js"></script>
 </body>
 </html>
