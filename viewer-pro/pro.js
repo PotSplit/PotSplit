@@ -1,4 +1,7 @@
-/* AeonSight Pro — complete app script (PDF, EPUB, TXT/HTML) + hardened EPUB sandbox + PWA reg */
+/* AeonSight Pro — complete app script (PDF, EPUB, TXT/HTML)
+   - Hardened EPUB sandbox with pre-append guard (prevents “allow-scripts + allow-same-origin” combo)
+   - Safe default (EPUB scripts OFF). Optional toggle to allow scripts (less safe).
+*/
 
 ////////////////////
 // DOM references //
@@ -232,6 +235,54 @@ function kickSleepGuard(){
   }, state.sleepMinutes*60*1000);
 }
 
+/////////////////////////////
+// EPUB sandbox hardening  //
+/////////////////////////////
+/** Ensure the iframe never hits the dangerous combo at append-time */
+function setSandboxTokens(iframe, allowScripts){
+  // Scripts ON (less safe): unique, opaque origin — no same-origin privileges
+  // Scripts OFF (default): allow same-origin for resources, but no script execution
+  iframe.setAttribute('sandbox', allowScripts ? 'allow-scripts' : 'allow-same-origin');
+}
+
+/** Patch only our mount container’s append/insert so we can fix iframe attrs BEFORE they hit the DOM */
+function guardIframeInsertion(container, allowScripts){
+  const patch = (method) => {
+    const original = container[method].bind(container);
+    container[method] = function(node, ...rest){
+      try{
+        if (node && node.tagName === 'IFRAME') setSandboxTokens(node, allowScripts);
+      }catch{}
+      return original(node, ...rest);
+    };
+    return () => (container[method] = original);
+  };
+  const restoreAppend = patch('appendChild');
+  const restoreInsert = patch('insertBefore');
+
+  // Fallback: mutation observer in case a child wrapper adds an iframe deeper
+  const mo = new MutationObserver((recs)=>{
+    for (const r of recs){
+      r.addedNodes.forEach(n=>{
+        if (n && n.tagName === 'IFRAME') setSandboxTokens(n, allowScripts);
+        if (n && n.querySelectorAll){
+          n.querySelectorAll('iframe').forEach(fr=> setSandboxTokens(fr, allowScripts));
+        }
+      });
+    }
+  });
+  mo.observe(container, { childList:true, subtree:true });
+
+  return () => { try{ restoreAppend(); restoreInsert(); mo.disconnect(); }catch{} };
+}
+
+/** Extra belt-and-suspenders after pages render */
+function forceEpubSandbox(allowScripts){
+  const wanted = allowScripts ? 'allow-scripts' : 'allow-same-origin';
+  const frs = contentEl.querySelectorAll('iframe');
+  frs.forEach(fr => fr.setAttribute('sandbox', wanted));
+}
+
 ///////////////////////////
 // Openers per file type //
 ///////////////////////////
@@ -295,13 +346,6 @@ async function renderPDFPage(){
   kickSleepGuard();
 }
 
-function forceEpubSandbox(allowScripts){
-  // If scripts ON: sandbox="allow-scripts" (unique origin). If OFF: sandbox="allow-same-origin".
-  const wanted = allowScripts ? 'allow-scripts' : 'allow-same-origin';
-  const frs = contentEl.querySelectorAll('iframe');
-  frs.forEach(fr => fr.setAttribute('sandbox', wanted));
-}
-
 async function openEPUB(name, dataUrl){
   try{
     if (!window['ePub']) throw new Error('ePub.js missing');
@@ -318,6 +362,9 @@ async function openEPUB(name, dataUrl){
     mount.className = 'epub-mount';
     contentEl.appendChild(mount);
 
+    // Guard BEFORE EPUB.js appends its iframe
+    const restoreGuards = guardIframeInsertion(mount, allowScripts);
+
     state.epubRend = state.epubBook.renderTo(mount, {
       width: '100%',
       height: '84vh',
@@ -333,10 +380,20 @@ async function openEPUB(name, dataUrl){
     });
     state.epubRend.themes.select('aeon');
 
-    await state.epubRend.display();
-    forceEpubSandbox(allowScripts);
+    // After each view is displayed, make sure sandbox is correct
+    state.epubRend.on('displayed', (view)=>{
+      try { if (view && view.iframe) setSandboxTokens(view.iframe, allowScripts); } catch {}
+    });
     state.epubRend.on('rendered', ()=> forceEpubSandbox(allowScripts));
 
+    // First paint
+    await state.epubRend.display();
+    forceEpubSandbox(allowScripts);
+
+    // Keep guards during lifetime of this mount (don’t restore)
+    // If you prefer to restore, call: restoreGuards();
+
+    // Progress + stats
     state.epubRend.on('relocated', (loc)=>{
       try{
         const pct = Math.round((loc?.start?.percentage || 0) * 100);
@@ -662,7 +719,7 @@ async function buildSampleEpub(){
   setStatus('Idle');
   contentEl.focus();
 
-  // Register Service Worker (once)
+  // Register Service Worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW reg failed', err));
   }
