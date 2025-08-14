@@ -1,6 +1,6 @@
-// sw.js — simple offline cache (same-origin only)
-// Bump the version to force-update cached files after you paste new code.
-const CACHE = 'aeonsight-v2';
+// sw.js — offline cache for AeonSight Pro
+// Bump version to refresh cache after updates
+const CACHE = 'aeonsight-v3';
 const CORE = [
   'index.html',
   'styles.css',
@@ -22,7 +22,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Network-first for HTML, cache-first for everything else
+// Network-first for HTML, cache-first for others
 self.addEventListener('fetch', event => {
   const req = event.request;
   const url = new URL(req.url);
