@@ -1,9 +1,7 @@
-/* AeonSight Pro — themed UI + high-contrast dock + EPUB/PDF support
-   - Bottom dock always visible with strong contrast
-   - Theme selector (Dark / Light / Sepia) applies to UI and EPUB content
-   - EPUB libs auto-load (JSZip + epub.js); PDF.js provided via HTML
-   - EPUB sandbox hardened (no allow-scripts + allow-same-origin combo)
-   - PDF render uses replaceChildren() to avoid "deferred node" warning
+/* AeonSight Pro — themes + audio reader + EPUB/PDF support
+   - 🎧 Audio Reader (Web Speech): play/pause/stop, voice pick, rate/pitch/volume, auto-advance
+   - Bottom dock, theme selector (UI + EPUB), library, PDF.js, EPUB.js (on-demand)
+   - Hardened sandbox for EPUB (never both allow-scripts + allow-same-origin)
 */
 
 ////////////////////
@@ -30,6 +28,15 @@ const sleepMinsInp = document.getElementById('sleepMins');
 
 const allowScriptsChk = document.getElementById('allowScripts');
 const themeSelect     = document.getElementById('themeSelect');
+
+const ttsVoice = document.getElementById('ttsVoice');
+const ttsRate  = document.getElementById('ttsRate');
+const ttsPitch = document.getElementById('ttsPitch');
+const ttsVol   = document.getElementById('ttsVol');
+const ttsAuto  = document.getElementById('ttsAuto');
+const ttsPlay  = document.getElementById('ttsPlay');
+const ttsPause = document.getElementById('ttsPause');
+const ttsStop  = document.getElementById('ttsStop');
 
 const lensEl    = document.getElementById('lens');
 
@@ -73,7 +80,16 @@ const state = {
 
   // UI
   fov: 72,
-  theme: 'dark'
+  theme: 'dark',
+
+  // TTS
+  tts: {
+    speaking: false,
+    paused: false,
+    queue: [],
+    idx: 0,
+    follow: false  // auto-advance flag while speaking
+  }
 };
 
 /////////////////////
@@ -97,7 +113,6 @@ async function loadScriptOnce(globalKey, srcList) {
   }
   throw lastErr || new Error('Unable to load ' + globalKey);
 }
-
 async function ensureEPUBLibs() {
   await loadScriptOnce('JSZip', [
     'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',
@@ -117,27 +132,16 @@ function applyTheme(theme) {
   state.theme = theme;
   document.body.classList.remove('theme-dark','theme-light','theme-sepia');
   document.body.classList.add(`theme-${theme}`);
-
-  // For plain text/HTML mode we let CSS drive colors; EPUB needs explicit theme
-  if (state.type === 'epub' && state.epubRend) {
-    setEpubTheme(theme);
-  }
+  if (state.type === 'epub' && state.epubRend) setEpubTheme(theme);
 }
-
 function setEpubTheme(theme) {
   if (!state.epubRend) return;
   const pct = String(state.epubFontPct || Number(fontPct.value) || 100) + '%';
-
-  // Register a theme under a constant key, overwriting each time
   const base = { 'line-height':'1.7', 'font-size': pct };
   let bodyStyles;
-  if (theme === 'light') {
-    bodyStyles = { ...base, 'color':'#0b0c10', 'background':'#ffffff' };
-  } else if (theme === 'sepia') {
-    bodyStyles = { ...base, 'color':'#3b2f27', 'background':'#f5efe3' };
-  } else {
-    bodyStyles = { ...base, 'color':'#eaf0ff', 'background':'#0b0c10' };
-  }
+  if (theme === 'light') bodyStyles = { ...base, 'color':'#0b0c10', 'background':'#ffffff' };
+  else if (theme === 'sepia') bodyStyles = { ...base, 'color':'#3b2f27', 'background':'#f5efe3' };
+  else bodyStyles = { ...base, 'color':'#eaf0ff', 'background':'#0b0c10' };
   state.epubRend.themes.register('aeon-theme', {
     'body': bodyStyles,
     'p': { 'margin': '0 0 1em 0' }
@@ -157,11 +161,7 @@ const fmtTime = secs => {
   const s = secs % 60;
   return `${m}:${s.toString().padStart(2,'0')}`;
 };
-
-function extOfName(name=''){
-  const m = name.toLowerCase().match(/\.([a-z0-9]+)$/);
-  return m ? m[1] : '';
-}
+function extOfName(name=''){ const m = name.toLowerCase().match(/\.([a-z0-9]+)$/); return m ? m[1] : ''; }
 function fileToDataUrl(file){
   return new Promise((res, rej)=>{
     const fr = new FileReader();
@@ -372,8 +372,8 @@ async function renderPDFPage(){
 }
 
 function forceEpubSandbox(allowScripts){
-  // If scripts ON: sandbox="allow-scripts" (unique origin; safer than both)
-  // If scripts OFF: sandbox="allow-same-origin" (no scripts; resources load)
+  // If scripts ON: sandbox="allow-scripts" (no same-origin)
+  // If scripts OFF: sandbox="allow-same-origin" (no scripts)
   const wanted = allowScripts ? 'allow-scripts' : 'allow-same-origin';
   const frs = contentEl.querySelectorAll('iframe');
   frs.forEach(fr => fr.setAttribute('sandbox', wanted));
@@ -401,11 +401,10 @@ async function openEPUB(name, dataUrl){
       allowScriptedContent: allowScripts
     });
 
-    // Font size + theme
     state.epubFontPct = Number(fontPct.value || 100);
 
     await state.epubRend.display();
-    setEpubTheme(state.theme);               // apply current theme
+    setEpubTheme(state.theme);
     forceEpubSandbox(allowScripts);
     state.epubRend.on('rendered', ()=> {
       setEpubTheme(state.theme);
@@ -460,6 +459,187 @@ function stripHtml(html){
   return (div.textContent || div.innerText || '').trim();
 }
 
+//////////////////////
+// 🎧 Audio Reader //
+//////////////////////
+function ttsPopulateVoices() {
+  const voices = window.speechSynthesis?.getVoices?.() || [];
+  const prev = loadJSON(LS_KEY_CFG, {}).ttsVoice;
+  ttsVoice.innerHTML = '';
+  voices.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.name; opt.textContent = `${v.name} (${v.lang})${v.default?' — default':''}`;
+    ttsVoice.appendChild(opt);
+  });
+  if (prev) ttsVoice.value = prev;
+}
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = ttsPopulateVoices;
+  // Sometimes voices are already there:
+  setTimeout(ttsPopulateVoices, 200);
+}
+
+function getSelectionInContent() {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return '';
+  const range = sel.getRangeAt(0);
+  // Only read selection that touches #content
+  if (!contentEl.contains(range.commonAncestorContainer)) return '';
+  return sel.toString().trim();
+}
+
+async function getPDFCurrentPageText() {
+  try {
+    if (!state.pdfDoc) return '';
+    const page = await state.pdfDoc.getPage(state.pdfPage);
+    const textContent = await page.getTextContent();
+    const strings = textContent.items.map(i => i.str);
+    return strings.join(' ');
+  } catch { return ''; }
+}
+
+function getEPUBVisibleText() {
+  // NOTE: Works when sandbox has allow-same-origin (default when scripts are NOT allowed).
+  try {
+    const contents = state.epubRend?.getContents?.() || [];
+    const text = contents.map(c => c?.document?.body?.innerText || '').join('\n').trim();
+    return text;
+  } catch (e) {
+    // If scripts are allowed, same-origin is OFF, so reading text is blocked.
+    return '';
+  }
+}
+
+function getPlainTextFromStage() {
+  return contentEl?.innerText?.trim?.() || '';
+}
+
+function splitIntoChunksBySentence(text, maxLen = 1600) {
+  const parts = text
+    .replace(/\s+/g, ' ')
+    .split(/([.!?]+)\s+/) // keep delimiters
+    .reduce((acc, cur, i, arr) => {
+      if (i % 2 === 0) { // sentence
+        const end = (arr[i+1] || '');
+        acc.push((cur + (end ? (end + ' ') : '')));
+      }
+      return acc;
+    }, []);
+  const chunks = [];
+  let buf = '';
+  for (const s of parts) {
+    if ((buf + s).length > maxLen) { if (buf) chunks.push(buf); buf = s; }
+    else buf += s;
+  }
+  if (buf) chunks.push(buf);
+  // Fallback if nothing split:
+  return chunks.length ? chunks : [text.slice(0, maxLen)];
+}
+
+function buildUtterance(text) {
+  const u = new SpeechSynthesisUtterance(text);
+  const voices = speechSynthesis.getVoices();
+  const chosen = voices.find(v => v.name === ttsVoice.value);
+  if (chosen) u.voice = chosen;
+  u.rate  = Number(ttsRate.value || 1);
+  u.pitch = Number(ttsPitch.value || 1);
+  u.volume= Number(ttsVol.value || 1);
+  return u;
+}
+
+async function collectCurrentReadableText() {
+  // 1) selection wins
+  const sel = getSelectionInContent();
+  if (sel) return sel;
+
+  // 2) else per type
+  if (state.type === 'pdf') {
+    return await getPDFCurrentPageText();
+  }
+  if (state.type === 'epub') {
+    const t = getEPUBVisibleText();
+    if (!t && allowScriptsChk.checked) {
+      setStatus('Audio Reader: To read EPUB text, turn OFF "Allow EPUB scripts" (enables same-origin).');
+    }
+    return t;
+  }
+  if (state.type === 'txt' || state.type === 'html') {
+    return getPlainTextFromStage();
+  }
+  return '';
+}
+
+function ttsCancelAll() {
+  state.tts.speaking = false;
+  state.tts.paused = false;
+  state.tts.follow = false;
+  state.tts.queue = [];
+  state.tts.idx = 0;
+  try { speechSynthesis.cancel(); } catch {}
+}
+
+async function ttsStartFollow() {
+  // Read current view; if auto-advance is enabled and we finish the page/section, go next and continue.
+  const baseText = (await collectCurrentReadableText()) || '';
+  if (!baseText) { setStatus('Audio Reader: nothing readable on this view.'); return; }
+
+  const chunks = splitIntoChunksBySentence(baseText);
+  state.tts.queue = chunks;
+  state.tts.idx = 0;
+  state.tts.speaking = true;
+  state.tts.follow = !!ttsAuto.checked;
+
+  const speakNext = () => {
+    if (!state.tts.speaking) return;
+    if (state.tts.idx >= state.tts.queue.length) {
+      // Finished this view
+      if (!state.tts.follow) { state.tts.speaking = false; setStatus('Audio Reader: done.'); return; }
+      // Auto-advance
+      if (state.type === 'pdf' && state.pdfDoc && state.pdfPage < state.pdfDoc.numPages) {
+        nextBtn.click();
+        // Give render time, then continue
+        setTimeout(()=> ttsStartFollow(), 250);
+        return;
+      }
+      if (state.type === 'epub' && state.epubRend) {
+        state.epubRend.next().then(()=> setTimeout(()=> ttsStartFollow(), 250));
+        return;
+      }
+      // No more pages/sections
+      state.tts.speaking = false;
+      setStatus('Audio Reader: end of document/section.');
+      return;
+    }
+
+    const u = buildUtterance(state.tts.queue[state.tts.idx]);
+    u.onend = () => { state.tts.idx++; speakNext(); };
+    u.onerror = () => { state.tts.idx++; speakNext(); };
+    try { speechSynthesis.speak(u); } catch { state.tts.idx++; speakNext(); }
+  };
+
+  speakNext();
+  setStatus('Audio Reader: playing…');
+}
+
+ttsPlay.onclick = async ()=> {
+  ttsCancelAll();
+  await ttsStartFollow();
+};
+ttsPause.onclick = ()=> {
+  if (!state.tts.speaking) return;
+  if (!speechSynthesis.paused) { speechSynthesis.pause(); state.tts.paused = true; setStatus('Audio Reader: paused'); }
+  else { try { speechSynthesis.resume(); state.tts.paused = false; setStatus('Audio Reader: resumed'); } catch{} }
+};
+ttsStop.onclick = ()=> {
+  ttsCancelAll();
+  setStatus('Audio Reader: stopped');
+};
+
+// Persist TTS prefs
+[ttsRate, ttsPitch, ttsVol, ttsVoice, ttsAuto].forEach(el=>{
+  el.addEventListener('change', persistCfg);
+});
+
 ///////////////////////////
 // Controls & Shortcuts  //
 ///////////////////////////
@@ -486,11 +666,12 @@ zoomIn.onclick = async ()=>{
     await renderPDFPage();
   } else if (state.type === 'epub' && state.epubRend){
     state.epubFontPct = clamp(state.epubFontPct + 10, 80, 180);
-    setEpubTheme(state.theme); // re-apply with new size
+    setEpubTheme(state.theme);
   } else if (state.type === 'txt' || state.type === 'html'){
     const cur = Number(fontPct.value||100)+10; fontPct.value = clamp(cur, 80, 180);
     contentEl.style.fontSize = `${fontPct.value}%`;
   }
+  persistCfg();
 };
 zoomOut.onclick = async ()=>{
   if (state.type === 'pdf' && state.pdfDoc){
@@ -498,11 +679,12 @@ zoomOut.onclick = async ()=>{
     await renderPDFPage();
   } else if (state.type === 'epub' && state.epubRend){
     state.epubFontPct = clamp(state.epubFontPct - 10, 80, 180);
-    setEpubTheme(state.theme); // re-apply with new size
+    setEpubTheme(state.theme);
   } else if (state.type === 'txt' || state.type === 'html'){
     const cur = Number(fontPct.value||100)-10; fontPct.value = clamp(cur, 80, 180);
     contentEl.style.fontSize = `${fontPct.value}%`;
   }
+  persistCfg();
 };
 
 fovRange.oninput = ()=>{
@@ -516,8 +698,8 @@ fovRange.oninput = ()=>{
   } else {
     contentEl.classList.remove('wide','narrow');
   }
-  persistCfg();
 };
+fovRange.addEventListener('change', persistCfg);
 
 fontPct.oninput = ()=>{
   const v = Number(fontPct.value);
@@ -527,8 +709,8 @@ fontPct.oninput = ()=>{
   } else {
     contentEl.style.fontSize = `${v}%`;
   }
-  persistCfg();
 };
+fontPct.addEventListener('change', persistCfg);
 
 toggleReader.onclick = ()=>{
   const on = document.body.classList.toggle('reader');
@@ -547,6 +729,7 @@ sleepBtn.onclick = ()=> { try{ ensureBuzzer()(); }catch{}; };
 
 allowScriptsChk.onchange = ()=>{
   persistCfg();
+  // Re-open current EPUB under the new sandbox policy
   if (state.type === 'epub' && state.currentId) openFromLibrary(state.currentId);
 };
 
@@ -565,6 +748,7 @@ document.addEventListener('keydown', async (e)=>{
   if (e.key.toLowerCase() === 'i'){ toggleLens.click(); }
   if (e.key.toLowerCase() === 's'){ sleepBtn.click(); }
   if (e.key.toLowerCase() === 'f'){ document.documentElement.requestFullscreen?.(); }
+  if (e.key.toLowerCase() === 'p'){ ttsPlay.click(); } // Play audio
 });
 
 ////////////////////
@@ -676,7 +860,7 @@ async function buildSampleEpub(){
   </head>
   <body>
     <h1>AeonSight Sample</h1>
-    <p>This EPUB was generated on the fly. Try Reader Mode (R), zoom (+/-), and the theme selector.</p>
+    <p>This EPUB was generated on the fly. Try Reader Mode (R), zoom (+/-), the theme selector, and the Audio Reader.</p>
     <p>Drop your own EPUB/PDF any time on the stage.</p>
   </body>
 </html>`);
@@ -696,10 +880,7 @@ async function buildSampleEpub(){
     <item id="chap1" href="chapter1.xhtml" media-type="application/xhtml+xml"/>
     <item id="css" href="style.css" media-type="text/css"/>
   </manifest>
-  <spine>
-    <itemref idref="chap1"/>
-  </spine>
-</package>`);
+  <spine><itemref idref="chap1"/></spine>`);
 
   const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
   const dataUrl = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(blob); });
@@ -714,8 +895,7 @@ async function buildSampleEpub(){
   if (cfg.fontPct) { fontPct.value = cfg.fontPct; }
   if (cfg.fov) { fovRange.value = cfg.fov; fovRange.oninput(); }
   if (cfg.sleepMinutes) { sleepMinsInp.value = cfg.sleepMinutes; }
-  if (cfg.theme) { themeSelect.value = cfg.theme; applyTheme(cfg.theme); }
-  else { applyTheme('dark'); }
+  if (cfg.theme) { themeSelect.value = cfg.theme; applyTheme(cfg.theme); } else { applyTheme('dark'); }
   if (typeof cfg.allowScripts === 'boolean') allowScriptsChk.checked = cfg.allowScripts;
   if (cfg.reader) {
     document.body.classList.add('reader');
@@ -723,9 +903,18 @@ async function buildSampleEpub(){
     toggleReader.setAttribute('aria-pressed', 'true');
   }
 
+  // TTS restore
+  if (cfg.ttsRate)  ttsRate.value = cfg.ttsRate;
+  if (cfg.ttsPitch) ttsPitch.value = cfg.ttsPitch;
+  if (cfg.ttsVol)   ttsVol.value   = cfg.ttsVol;
+  if (typeof cfg.ttsAuto === 'boolean') ttsAuto.checked = cfg.ttsAuto;
+
   renderLibrary();
   setStatus('Idle');
   contentEl.focus();
+
+  // Ensure voices ASAP
+  ttsPopulateVoices();
 })();
 
 function persistCfg(){
@@ -735,6 +924,12 @@ function persistCfg(){
     sleepMinutes: Number(sleepMinsInp.value),
     allowScripts: !!allowScriptsChk.checked,
     reader: document.body.classList.contains('reader'),
-    theme: themeSelect.value
+    theme: themeSelect.value,
+    // TTS
+    ttsRate: Number(ttsRate.value),
+    ttsPitch: Number(ttsPitch.value),
+    ttsVol: Number(ttsVol.value),
+    ttsVoice: ttsVoice.value || '',
+    ttsAuto: !!ttsAuto.checked
   });
 }
