@@ -1047,3 +1047,31 @@ function persistCfg(){
     font: fontSel.value || 'serif'
   });
 }
+// ---- Bottom Action Dock (no-HTML-change helper) ----
+(function makeBottomDock(){
+  // IDs you want in the bottom dock (add/remove to taste)
+  const ids = [
+    'openBtn','importBtn','exportBtn',
+    'prevPage','nextPage','zoomOut','zoomIn',
+    'toggleReader','toggleLens','sleepBtn'
+  ];
+
+  // Create the dock once
+  if (document.getElementById('actionDock')) return;
+  const dock = document.createElement('div');
+  dock.id = 'actionDock';
+  dock.setAttribute('role','toolbar');
+  dock.setAttribute('aria-label','Reading controls');
+  document.body.appendChild(dock);
+
+  // Move any existing controls into the dock (if they exist)
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // If a button has a parent wrapper that matters, just move the button itself
+    dock.appendChild(el);
+  });
+
+  // Optional: if nothing was found, remove the dock
+  if (!dock.children.length) dock.remove();
+})();
