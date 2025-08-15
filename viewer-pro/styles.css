@@ -13,9 +13,7 @@
   --readbar-bg: rgba(0,0,0,0.75);
   --readbar-fg: var(--fg);
   --readbar-muted: #b8c2cf;
-
-  /* dynamic UI spacing (JS updates --dock-h) */
-  --dock-h: 84px;
+  --dock-h: 84px;             /* JS keeps this in sync */
   --readbar-gap: 10px;
 }
 
@@ -121,13 +119,13 @@ body {
   border-radius: 8px;
 }
 
-/* EPUB mount (now scrollable) */
+/* EPUB mount (scrollable) */
 .epub-mount {
   width: 100%;
   height: calc(100vh - var(--dock-h) - 120px);
   background: var(--page-bg);
   border-radius: 8px;
-  overflow: auto; /* <-- was hidden; now scrollable */
+  overflow: auto;
   box-shadow: 0 10px 40px rgba(0,0,0,.20);
 }
 
@@ -150,15 +148,17 @@ body.lens-on #lens { display: block; }
   box-shadow: 0 -6px 30px rgba(0,0,0,.35);
   color: var(--fg);
   z-index: 4000;
+
+  /* Make sure you can *always* reach controls */
+  overflow-x: auto;
 }
 
-.dock-left, .dock-mid, .dock-right {
+.dock-left, .dock-mid, .dock-right, .dock-tts {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
+#dock * { flex: 0 0 auto; } /* prevent controls from shrinking too small */
 
-/* 🎧 TTS group */
 .dock-tts {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   border-left: 1px dashed var(--dock-border);
   border-right: 1px dashed var(--dock-border);
   padding-inline: 10px;
@@ -230,4 +230,10 @@ body.reader .content { max-width: 780px; margin-inline: auto; }
   background: color-mix(in oklab, var(--accent) 32%, transparent);
   border-radius: 4px;
   padding: 0 2px;
+}
+
+/* Small screens: let dock wrap freely */
+@media (max-width: 920px) {
+  #dock { grid-template-columns: 1fr; }
+  .dock-right { justify-content: flex-end; }
 }
