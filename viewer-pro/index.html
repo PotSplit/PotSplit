@@ -30,6 +30,8 @@
       <div id="content" tabindex="0" class="content empty">
         Drop a PDF/EPUB/TXT/HTML here or use the buttons below.
       </div>
+
+      <!-- Reading mask -->
       <div id="lens" aria-hidden="true"></div>
     </main>
   </div>
@@ -62,12 +64,12 @@
 
       <label class="ctrl">
         Font
-        <input id="fontPct" type="range" min="80" max="180" step="10" value="100" />
+        <input id="fontPct" type="range" min="80" max="200" step="2" value="100" />
       </label>
 
-      <label class="ctrl">
+      <label class="ctrl" title="Adjust column width precisely">
         FOV
-        <input id="fov" type="range" min="56" max="96" step="2" value="72" />
+        <input id="fov" type="range" min="56" max="96" step="1" value="72" />
       </label>
 
       <label class="ctrl">
