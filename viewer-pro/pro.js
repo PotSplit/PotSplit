@@ -1,7 +1,8 @@
-/* AeonSight Pro — themes + audio reader + EPUB/PDF support
+/* AeonSight Pro — themes + audio reader + EPUB/PDF support + karaoke highlighting
    - 🎧 Audio Reader (Web Speech): play/pause/stop, voice pick, rate/pitch/volume, auto-advance
-   - Bottom dock, theme selector (UI + EPUB), library, PDF.js, EPUB.js (on-demand)
-   - Hardened sandbox for EPUB (never both allow-scripts + allow-same-origin)
+   - Read Bar overlay shows previous/current/next sentence for ALL types
+   - TXT/clean-HTML also gets in-page sentence highlighting
+   - EPUB/PDF stay sandbox-safe; EPUB in-page highlight only when same-origin is allowed (we default to overlay)
 */
 
 ////////////////////
@@ -47,6 +48,12 @@ const statPage  = document.getElementById('statPage');
 const statTime  = document.getElementById('statTime');
 const statWords = document.getElementById('statWords');
 
+// Read Bar
+const readBar   = document.getElementById('readBar');
+const rbPrev    = readBar.querySelector('.rb-prev');
+const rbCurrent = readBar.querySelector('.rb-current');
+const rbNext    = readBar.querySelector('.rb-next');
+
 //////////////////////
 // Persistent state //
 //////////////////////
@@ -68,6 +75,10 @@ const state = {
   epubRend: null,
   epubFontPct: 100,
 
+  // Plain text rendering (for in-page highlight)
+  plainSentences: [],   // array of strings for TXT/HTML after render
+  plainIsRendered: false,
+
   // Stats
   startedAt: 0,
   seconds: 0,
@@ -88,7 +99,8 @@ const state = {
     paused: false,
     queue: [],
     idx: 0,
-    follow: false  // auto-advance flag while speaking
+    follow: false,  // auto-advance flag while speaking
+    mapToPlain: false // if current queue maps 1:1 to plainSentences
   }
 };
 
@@ -196,6 +208,23 @@ function dataUrlToUint8(dataUrl){
   return bytes;
 }
 
+// Sentence split (shared by TTS and in-page render)
+function sentenceSplit(text) {
+  // Normalize whitespace
+  const t = (text || '').replace(/\s+/g, ' ').trim();
+  if (!t) return [];
+  // Split on end punctuation + space, keep punctuation with sentence
+  const parts = t.split(/(?<=[.!?])\s+/);
+  // Merge very short fragments with next sentence to avoid micro-chunks
+  const out = [];
+  for (let i=0;i<parts.length;i++){
+    const cur = parts[i];
+    if (cur.length < 6 && i < parts.length - 1) { parts[i+1] = cur + ' ' + parts[i+1]; continue; }
+    out.push(cur);
+  }
+  return out;
+}
+
 //////////////////////
 // Library handling //
 //////////////////////
@@ -254,6 +283,10 @@ function resetDoc(){
   state.epubRend = null;
   state.epubBook = null;
 
+  // Plain render
+  state.plainSentences = [];
+  state.plainIsRendered = false;
+
   // Stats
   state.seconds = 0;
   state.wordsRead = 0;
@@ -261,6 +294,11 @@ function resetDoc(){
   updateStats();
   stopSleepGuard();
   kickSleepGuard();
+
+  // TTS cleanup
+  ttsCancelAll();
+  hideReadBar();
+  clearPlainHighlight();
 }
 
 function setStatus(msg){ statStatus.textContent = msg; }
@@ -369,6 +407,8 @@ async function renderPDFPage(){
 
   state.wordsRead += Math.round(280 * 0.9);
   kickSleepGuard();
+
+  // PDF: we use Read Bar overlay (no in-page highlight on canvas)
 }
 
 function forceEpubSandbox(allowScripts){
@@ -432,14 +472,11 @@ async function openEPUB(name, dataUrl){
 async function openPlain(name, dataUrl, type){
   try{
     const bytes = dataUrlToUint8(dataUrl);
-    const text = new TextDecoder('utf-8').decode(bytes);
-    const safe = (type === 'html') ? stripHtml(text) : text;
+    const raw = new TextDecoder('utf-8').decode(bytes);
+    const safe = (type === 'html') ? stripHtml(raw) : raw;
 
-    const pre = document.createElement('div');
-    pre.style.whiteSpace = 'pre-wrap';
-    pre.style.wordBreak = 'break-word';
-    pre.textContent = safe;
-    contentEl.replaceChildren(pre);
+    // Render as paragraphs with sentence spans for in-page highlight
+    renderPlainWithSpans(safe);
 
     const words = safe.trim().split(/\s+/g).filter(Boolean).length;
     state.wordsRead += words;
@@ -459,6 +496,58 @@ function stripHtml(html){
   return (div.textContent || div.innerText || '').trim();
 }
 
+//////////////////////////////
+// Plain text render helper //
+//////////////////////////////
+function renderPlainWithSpans(text) {
+  state.plainSentences = [];
+  state.plainIsRendered = false;
+  clearPlainHighlight();
+
+  const container = document.createElement('div');
+  container.style.whiteSpace = 'pre-wrap';
+  container.style.wordBreak = 'break-word';
+
+  const paras = (text || '').split(/\n{2,}/); // paragraphs on blank line(s)
+  let sentIndex = 0;
+  for (const p of paras) {
+    const pEl = document.createElement('p');
+    pEl.style.margin = '0 0 1em 0';
+    const sents = sentenceSplit(p);
+    for (const s of sents) {
+      const span = document.createElement('span');
+      span.className = 'sent';
+      span.dataset.idx = String(sentIndex);
+      span.textContent = s + ' ';
+      pEl.appendChild(span);
+      state.plainSentences.push(s);
+      sentIndex++;
+    }
+    container.appendChild(pEl);
+  }
+
+  contentEl.replaceChildren(container);
+  state.plainIsRendered = true;
+}
+
+function clearPlainHighlight() {
+  contentEl.querySelectorAll('.read-sent').forEach(el => el.classList.remove('read-sent'));
+}
+function markPlainSentence(idx) {
+  if (!state.plainIsRendered) return;
+  contentEl.querySelectorAll('.read-sent').forEach(el => el.classList.remove('read-sent'));
+  const el = contentEl.querySelector(`.sent[data-idx="${idx}"]`);
+  if (el) {
+    el.classList.add('read-sent');
+    // gentle auto-scroll if off-screen
+    const rect = el.getBoundingClientRect();
+    const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    if (rect.top < 80 || rect.bottom > vh - 200) {
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }
+}
+
 //////////////////////
 // 🎧 Audio Reader //
 //////////////////////
@@ -475,7 +564,6 @@ function ttsPopulateVoices() {
 }
 if ('speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = ttsPopulateVoices;
-  // Sometimes voices are already there:
   setTimeout(ttsPopulateVoices, 200);
 }
 
@@ -483,7 +571,6 @@ function getSelectionInContent() {
   const sel = window.getSelection();
   if (!sel || !sel.rangeCount) return '';
   const range = sel.getRangeAt(0);
-  // Only read selection that touches #content
   if (!contentEl.contains(range.commonAncestorContainer)) return '';
   return sel.toString().trim();
 }
@@ -499,41 +586,17 @@ async function getPDFCurrentPageText() {
 }
 
 function getEPUBVisibleText() {
-  // NOTE: Works when sandbox has allow-same-origin (default when scripts are NOT allowed).
   try {
     const contents = state.epubRend?.getContents?.() || [];
     const text = contents.map(c => c?.document?.body?.innerText || '').join('\n').trim();
     return text;
-  } catch (e) {
-    // If scripts are allowed, same-origin is OFF, so reading text is blocked.
-    return '';
+  } catch {
+    return ''; // blocked when scripts are allowed (no same-origin)
   }
 }
 
 function getPlainTextFromStage() {
   return contentEl?.innerText?.trim?.() || '';
-}
-
-function splitIntoChunksBySentence(text, maxLen = 1600) {
-  const parts = text
-    .replace(/\s+/g, ' ')
-    .split(/([.!?]+)\s+/) // keep delimiters
-    .reduce((acc, cur, i, arr) => {
-      if (i % 2 === 0) { // sentence
-        const end = (arr[i+1] || '');
-        acc.push((cur + (end ? (end + ' ') : '')));
-      }
-      return acc;
-    }, []);
-  const chunks = [];
-  let buf = '';
-  for (const s of parts) {
-    if ((buf + s).length > maxLen) { if (buf) chunks.push(buf); buf = s; }
-    else buf += s;
-  }
-  if (buf) chunks.push(buf);
-  // Fallback if nothing split:
-  return chunks.length ? chunks : [text.slice(0, maxLen)];
 }
 
 function buildUtterance(text) {
@@ -547,26 +610,42 @@ function buildUtterance(text) {
   return u;
 }
 
+function showReadBar(prev, cur, next) {
+  rbPrev.textContent = prev || '';
+  rbCurrent.textContent = cur || '';
+  rbNext.textContent = next || '';
+  readBar.hidden = false;
+}
+function hideReadBar() {
+  readBar.hidden = true;
+  rbPrev.textContent = rbCurrent.textContent = rbNext.textContent = '';
+}
+
 async function collectCurrentReadableText() {
   // 1) selection wins
   const sel = getSelectionInContent();
-  if (sel) return sel;
+  if (sel) return { text: sel, mapToPlain: false };
 
   // 2) else per type
   if (state.type === 'pdf') {
-    return await getPDFCurrentPageText();
+    const t = await getPDFCurrentPageText();
+    return { text: t, mapToPlain: false };
   }
   if (state.type === 'epub') {
     const t = getEPUBVisibleText();
     if (!t && allowScriptsChk.checked) {
       setStatus('Audio Reader: To read EPUB text, turn OFF "Allow EPUB scripts" (enables same-origin).');
     }
-    return t;
+    return { text: t, mapToPlain: false };
   }
   if (state.type === 'txt' || state.type === 'html') {
-    return getPlainTextFromStage();
+    // If we rendered spans, we can map 1:1
+    if (state.plainIsRendered && state.plainSentences.length) {
+      return { text: state.plainSentences.join(' '), mapToPlain: true };
+    }
+    return { text: getPlainTextFromStage(), mapToPlain: false };
   }
-  return '';
+  return { text: '', mapToPlain: false };
 }
 
 function ttsCancelAll() {
@@ -575,29 +654,34 @@ function ttsCancelAll() {
   state.tts.follow = false;
   state.tts.queue = [];
   state.tts.idx = 0;
+  state.tts.mapToPlain = false;
   try { speechSynthesis.cancel(); } catch {}
+  hideReadBar();
+  clearPlainHighlight();
 }
 
 async function ttsStartFollow() {
-  // Read current view; if auto-advance is enabled and we finish the page/section, go next and continue.
-  const baseText = (await collectCurrentReadableText()) || '';
+  const { text: baseText, mapToPlain } = await collectCurrentReadableText();
   if (!baseText) { setStatus('Audio Reader: nothing readable on this view.'); return; }
 
-  const chunks = splitIntoChunksBySentence(baseText);
+  const chunks = sentenceSplit(baseText);
+  if (!chunks.length) { setStatus('Audio Reader: no sentences found.'); return; }
+
   state.tts.queue = chunks;
   state.tts.idx = 0;
   state.tts.speaking = true;
   state.tts.follow = !!ttsAuto.checked;
+  state.tts.mapToPlain = mapToPlain;
 
   const speakNext = () => {
     if (!state.tts.speaking) return;
     if (state.tts.idx >= state.tts.queue.length) {
       // Finished this view
-      if (!state.tts.follow) { state.tts.speaking = false; setStatus('Audio Reader: done.'); return; }
+      if (!state.tts.follow) { state.tts.speaking = false; setStatus('Audio Reader: done.'); hideReadBar(); clearPlainHighlight(); return; }
       // Auto-advance
+      hideReadBar(); clearPlainHighlight();
       if (state.type === 'pdf' && state.pdfDoc && state.pdfPage < state.pdfDoc.numPages) {
         nextBtn.click();
-        // Give render time, then continue
         setTimeout(()=> ttsStartFollow(), 250);
         return;
       }
@@ -605,13 +689,21 @@ async function ttsStartFollow() {
         state.epubRend.next().then(()=> setTimeout(()=> ttsStartFollow(), 250));
         return;
       }
-      // No more pages/sections
       state.tts.speaking = false;
       setStatus('Audio Reader: end of document/section.');
       return;
     }
 
-    const u = buildUtterance(state.tts.queue[state.tts.idx]);
+    // UI updates for karaoke
+    const i = state.tts.idx;
+    const prev = state.tts.queue[i-1] || '';
+    const cur  = state.tts.queue[i]   || '';
+    const next = state.tts.queue[i+1] || '';
+    showReadBar(prev, cur, next);
+    if (state.tts.mapToPlain) markPlainSentence(i);
+
+    // Speak
+    const u = buildUtterance(cur);
     u.onend = () => { state.tts.idx++; speakNext(); };
     u.onerror = () => { state.tts.idx++; speakNext(); };
     try { speechSynthesis.speak(u); } catch { state.tts.idx++; speakNext(); }
@@ -650,6 +742,7 @@ prevBtn.onclick = async ()=>{
   } else if (state.type === 'epub' && state.epubRend){
     await state.epubRend.prev();
   }
+  if (state.tts.follow && state.tts.speaking) { ttsCancelAll(); await ttsStartFollow(); }
 };
 nextBtn.onclick = async ()=>{
   if (state.type === 'pdf' && state.pdfDoc){
@@ -658,6 +751,7 @@ nextBtn.onclick = async ()=>{
   } else if (state.type === 'epub' && state.epubRend){
     await state.epubRend.next();
   }
+  if (state.tts.follow && state.tts.speaking) { ttsCancelAll(); await ttsStartFollow(); }
 };
 
 zoomIn.onclick = async ()=>{
@@ -860,7 +954,7 @@ async function buildSampleEpub(){
   </head>
   <body>
     <h1>AeonSight Sample</h1>
-    <p>This EPUB was generated on the fly. Try Reader Mode (R), zoom (+/-), the theme selector, and the Audio Reader.</p>
+    <p>This EPUB was generated on the fly. Try Reader Mode (R), zoom (+/-), the theme selector, and the Audio Reader with karaoke highlighting.</p>
     <p>Drop your own EPUB/PDF any time on the stage.</p>
   </body>
 </html>`);
@@ -908,6 +1002,7 @@ async function buildSampleEpub(){
   if (cfg.ttsPitch) ttsPitch.value = cfg.ttsPitch;
   if (cfg.ttsVol)   ttsVol.value   = cfg.ttsVol;
   if (typeof cfg.ttsAuto === 'boolean') ttsAuto.checked = cfg.ttsAuto;
+  if (cfg.ttsVoice) { setTimeout(()=> { ttsVoice.value = cfg.ttsVoice; }, 300); }
 
   renderLibrary();
   setStatus('Idle');
