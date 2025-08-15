@@ -10,6 +10,9 @@
   --btn-bg: rgba(255,255,255,0.08);
   --btn-bg-hover: rgba(255,255,255,0.16);
   --danger: #ff5c5c;
+  --readbar-bg: rgba(0,0,0,0.55);
+  --readbar-fg: var(--fg);
+  --readbar-muted: #a9b7c6;
 }
 
 body.theme-light {
@@ -23,6 +26,9 @@ body.theme-light {
   --btn-bg: rgba(0,0,0,0.06);
   --btn-bg-hover: rgba(0,0,0,0.12);
   --danger: #d43535;
+  --readbar-bg: rgba(255,255,255,0.85);
+  --readbar-fg: #0b0c10;
+  --readbar-muted: #666a70;
 }
 
 body.theme-sepia {
@@ -36,6 +42,9 @@ body.theme-sepia {
   --btn-bg: rgba(0,0,0,0.06);
   --btn-bg-hover: rgba(0,0,0,0.12);
   --danger: #c63c3c;
+  --readbar-bg: rgba(245,239,227,0.92);
+  --readbar-fg: #3b2f27;
+  --readbar-muted: #7b6a5a;
 }
 
 /* ---------- Base layout ---------- */
@@ -85,7 +94,7 @@ body {
 #stage { position: relative; overflow: auto; }
 .content {
   min-height: calc(100vh - 120px);
-  padding: 26px clamp(16px, 3vw, 36px) 150px; /* bottom padding to clear dock */
+  padding: 26px clamp(16px, 3vw, 36px) 170px; /* bottom padding to clear dock + readbar */
   line-height: 1.6;
   transition: background .2s, color .2s;
 }
@@ -111,7 +120,7 @@ body {
 /* EPUB mount */
 .epub-mount {
   width: 100%;
-  height: calc(100vh - 180px);
+  height: calc(100vh - 200px);
   background: var(--page-bg);
   border-radius: 8px;
   overflow: hidden;
@@ -184,3 +193,36 @@ body.lens-on #lens { display: block; }
 
 /* Reader mode makes text area narrower for long-form reading */
 body.reader .content { max-width: 780px; margin-inline: auto; }
+
+/* ---------- Read Bar (karaoke) ---------- */
+.readbar {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: 80px; /* sits above dock */
+  padding: 10px 16px;
+  z-index: 999;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 6px;
+  background: var(--readbar-bg);
+  color: var(--readbar-fg);
+  border-top: 1px solid var(--dock-border);
+  border-bottom: 1px solid var(--dock-border);
+  backdrop-filter: blur(6px);
+}
+.readbar .rb-prev,
+.readbar .rb-next {
+  font-size: 12px;
+  color: var(--readbar-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.readbar .rb-current {
+  font-weight: 800;
+  letter-spacing: .01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border-left: 4px solid var(--accent);
+  padding-left: 8px;
+}
+
+/* In-page sentence highlight for TXT/HTML */
+.read-sent { background: color-mix(in oklab, var(--accent) 30%, transparent); border-radius: 4px; padding: 0 2px; }
