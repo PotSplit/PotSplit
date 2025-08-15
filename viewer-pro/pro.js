@@ -58,6 +58,41 @@ const ttsRate     = $('#ttsRate');
 const tapLeft     = $('#tapLeft');
 const tapRight    = $('#tapRight');
 
+// ---- EPUB library auto-loader (no HTML changes required) ----
+async function loadScriptOnce(globalKey, srcList) {
+  if (window[globalKey]) return; // already present
+  let lastErr;
+  for (const src of srcList) {
+    try {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('Failed to load ' + src));
+        document.head.appendChild(s);
+      });
+      if (window[globalKey]) return; // loaded successfully
+    } catch (err) { lastErr = err; }
+  }
+  throw lastErr || new Error('Unable to load ' + globalKey);
+}
+
+async function ensureEPUBLibs() {
+  // Load JSZip first (required by epub.js)
+  await loadScriptOnce('JSZip', [
+    'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',
+    'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js'
+  ]);
+
+  // Then epub.js
+  await loadScriptOnce('ePub', [
+    'https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js',
+    'https://unpkg.com/epubjs@0.3.93/dist/epub.min.js',
+    'https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js'
+  ]);
+}
+
 //////////////////////
 // Persistent state //
 //////////////////////
