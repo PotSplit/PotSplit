@@ -1,4 +1,4 @@
-/* AeonSight Pro — EPUB scroll + Read Bar + TTS; dock auto-resize; bugfixes */
+/* AeonSight Pro — precise FOV, working lens, font slider, EPUB script-strip */
 
 ////////////////////
 // DOM references //
@@ -97,7 +97,12 @@ const state = {
     idx: 0,
     follow: false,
     mapToPlain: false
-  }
+  },
+
+  // Lens
+  lensOn: false,
+  lensHeight: 180,
+  lensY: window.innerHeight * 0.3
 };
 
 /////////////////////
@@ -438,9 +443,24 @@ async function openEPUB(name, dataUrl){
     await state.epubRend.display();
     setEpubTheme(state.theme);
     forceEpubSandbox(allowScripts);
-    state.epubRend.on('rendered', ()=> {
+
+    // Strip scripts from EPUB content when scripts are disabled (prevents console spam)
+    state.epubRend.on('contents', (contents)=>{
+      if (!allowScripts) {
+        try {
+          contents.document.querySelectorAll('script').forEach(n => n.remove());
+        } catch {}
+      }
+    });
+
+    state.epubRend.on('rendered', ()=>{
       setEpubTheme(state.theme);
       forceEpubSandbox(allowScripts);
+      if (!allowScripts) {
+        try {
+          state.epubRend.getContents().forEach(c => c.document.querySelectorAll('script').forEach(n=>n.remove()));
+        } catch {}
+      }
     });
 
     state.epubRend.on('relocated', (loc)=>{
@@ -749,10 +769,10 @@ zoomIn.onclick = async ()=>{
     state.pdfScale = clamp(state.pdfScale + 0.1, 0.5, 3);
     await renderPDFPage();
   } else if (state.type === 'epub' && state.epubRend){
-    state.epubFontPct = clamp(state.epubFontPct + 10, 80, 180);
+    state.epubFontPct = clamp(state.epubFontPct + 6, 80, 200);
     setEpubTheme(state.theme);
   } else if (state.type === 'txt' || state.type === 'html'){
-    const cur = Number(fontPct.value||100)+10; fontPct.value = clamp(cur, 80, 180);
+    const cur = Number(fontPct.value||100)+6; fontPct.value = clamp(cur, 80, 200);
     contentEl.style.fontSize = `${fontPct.value}%`;
   }
   persistCfg();
@@ -762,57 +782,78 @@ zoomOut.onclick = async ()=>{
     state.pdfScale = clamp(state.pdfScale - 0.1, 0.5, 3);
     await renderPDFPage();
   } else if (state.type === 'epub' && state.epubRend){
-    state.epubFontPct = clamp(state.epubFontPct - 10, 80, 180);
+    state.epubFontPct = clamp(state.epubFontPct - 6, 80, 200);
     setEpubTheme(state.theme);
   } else if (state.type === 'txt' || state.type === 'html'){
-    const cur = Number(fontPct.value||100)-10; fontPct.value = clamp(cur, 80, 180);
+    const cur = Number(fontPct.value||100)-6; fontPct.value = clamp(cur, 80, 200);
     contentEl.style.fontSize = `${fontPct.value}%`;
   }
   persistCfg();
 };
 
-fovRange.oninput = ()=>{
-  state.fov = Number(fovRange.value);
-  if (state.fov <= 56) {
-    contentEl.classList.add('narrow');
-    contentEl.classList.remove('wide');
-  } else if (state.fov >= 86) {
-    contentEl.classList.add('wide');
-    contentEl.classList.remove('narrow');
-  } else {
-    contentEl.classList.remove('wide','narrow');
-  }
-};
+// Precise FOV: map 56→560px up to 96→1280px, smooth
+function applyFOV(val) {
+  const v = Number(val);
+  const minV = 56, maxV = 96;
+  const minW = 560, maxW = 1280;
+  const w = Math.round(minW + ( (v - minV) * (maxW - minW) / (maxV - minV) ));
+  contentEl.style.maxWidth = w + 'px';
+  contentEl.title = `Column width: ${w}px`;
+}
+fovRange.addEventListener('input', ()=>{ applyFOV(fovRange.value); });
 fovRange.addEventListener('change', persistCfg);
 
-fontPct.oninput = ()=>{
-  const v = Number(fontPct.value);
+// Font slider live
+fontPct.addEventListener('input', ()=>{
+  const v = clamp(Number(fontPct.value)||100, 80, 200);
   if (state.type === 'epub' && state.epubRend){
-    state.epubFontPct = clamp(v,80,180);
+    state.epubFontPct = v;
     setEpubTheme(state.theme);
   } else {
     contentEl.style.fontSize = `${v}%`;
   }
-};
+});
 fontPct.addEventListener('change', persistCfg);
+
+// Lens
+function lensEnable() {
+  if (state.lensOn) return;
+  state.lensOn = true;
+  document.body.classList.add('lens-on');
+}
+function lensDisable() {
+  if (!state.lensOn) return;
+  state.lensOn = false;
+  document.body.classList.remove('lens-on');
+}
+function lensUpdate() {
+  lensEl.style.top = Math.max(60, state.lensY - state.lensHeight/2) + 'px';
+  lensEl.style.height = state.lensHeight + 'px';
+}
+function lensMouse(e) {
+  if (!state.lensOn) return;
+  state.lensY = e.clientY;
+  lensUpdate();
+}
+toggleLens.onclick = ()=>{
+  if (state.lensOn) lensDisable(); else lensEnable();
+  lensUpdate();
+};
+window.addEventListener('mousemove', lensMouse);
 
 toggleReader.onclick = ()=>{
   const on = document.body.classList.toggle('reader');
   toggleReader.textContent = on ? 'Exit Reader Mode' : 'Reader Mode';
-  toggleReader.setAttribute('aria-pressed', on ? 'true' : 'false'); // <-- fixed stray ')'
+  toggleReader.setAttribute('aria-pressed', on ? 'true' : 'false');
   persistCfg();
   contentEl.focus({ preventScroll: false });
-};
-
-toggleLens.onclick = ()=>{
-  const on = document.body.classList.toggle('lens-on');
-  toggleLens.setAttribute('aria-pressed', on ? 'true' : 'false');
 };
 
 sleepBtn.onclick = ()=> { try{ ensureBuzzer()(); }catch{}; };
 
 allowScriptsChk.onchange = ()=>{
   persistCfg();
+  // Re-open current EPUB under the new sandbox policy
   if (state.type === 'epub' && state.currentId) openFromLibrary(state.currentId);
 };
 
@@ -943,7 +984,7 @@ async function buildSampleEpub(){
   </head>
   <body>
     <h1>AeonSight Sample</h1>
-    <p>This EPUB was generated on the fly. Try Reader Mode (R), zoom (+/-), the theme selector, and the Audio Reader with karaoke highlighting.</p>
+    <p>This EPUB was generated on the fly. Try Reader Mode (R), zoom (+/-), the theme selector, the Lens, and the Audio Reader with karaoke highlighting.</p>
     <p>Drop your own EPUB/PDF any time on the stage.</p>
   </body>
 </html>`);
@@ -966,7 +1007,7 @@ async function buildSampleEpub(){
   <spine>
     <itemref idref="chap1"/>
   </spine>
-</package>`); // <-- closed package tag restored
+</package>`);
 
   const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
   const dataUrl = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(blob); });
@@ -979,7 +1020,9 @@ async function buildSampleEpub(){
 (function init(){
   const cfg = loadJSON(LS_KEY_CFG, {});
   if (cfg.fontPct) { fontPct.value = cfg.fontPct; }
-  if (cfg.fov) { fovRange.value = cfg.fov; fovRange.oninput(); }
+  if (cfg.fov) { fovRange.value = cfg.fov; }
+  applyFOV(fovRange.value);
+
   if (cfg.sleepMinutes) { sleepMinsInp.value = cfg.sleepMinutes; }
   if (cfg.theme) { themeSelect.value = cfg.theme; applyTheme(cfg.theme); } else { applyTheme('dark'); }
   if (typeof cfg.allowScripts === 'boolean') allowScriptsChk.checked = cfg.allowScripts;
@@ -1003,10 +1046,11 @@ async function buildSampleEpub(){
   ttsPopulateVoices();
 
   syncDockHeight();
-  // Keep content padding synced to dock height in ALL cases
   const ro = new ResizeObserver(()=> syncDockHeight());
   ro.observe(dockEl);
   window.addEventListener('resize', syncDockHeight);
+
+  lensUpdate();
 })();
 
 function syncDockHeight(){
