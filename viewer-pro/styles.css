@@ -105,3 +105,33 @@ label{ display:flex; align-items:center; gap:.35rem; }
 
 /* Search highlight inside EPUB iframes (injected) */
 .epub-mark{ background: color-mix(in srgb, var(--acc) 30%, yellow 15%); outline: 1px solid color-mix(in srgb, var(--acc) 70%, transparent); }
+
+/* Bottom action dock (sticks above the bottom safe area) */
+#actionDock {
+  position: fixed;
+  left: max(8px, env(safe-area-inset-left));
+  right: max(8px, env(safe-area-inset-right));
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 12px;
+  background: linear-gradient(to top, rgba(12,14,20,0.95), rgba(12,14,20,0.6) 60%, rgba(12,14,20,0));
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  z-index: 1000;
+}
+
+#actionDock .btn { margin: 0; }           /* keep buttons tight in the dock */
+#actionDock .small { padding: 6px 10px; }  /* optional: smaller buttons fit better */
+
+/* Make sure content isn’t hidden behind the dock */
+#content,
+main,
+body {
+  --dock-space: calc(88px + env(safe-area-inset-bottom));
+}
+#content { padding-bottom: var(--dock-space); }
+
