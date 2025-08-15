@@ -10,9 +10,13 @@
   --btn-bg: rgba(255,255,255,0.08);
   --btn-bg-hover: rgba(255,255,255,0.16);
   --danger: #ff5c5c;
-  --readbar-bg: rgba(0,0,0,0.55);
+  --readbar-bg: rgba(0,0,0,0.75);
   --readbar-fg: var(--fg);
-  --readbar-muted: #a9b7c6;
+  --readbar-muted: #b8c2cf;
+
+  /* dynamic UI spacing (JS updates --dock-h) */
+  --dock-h: 84px;
+  --readbar-gap: 10px;
 }
 
 body.theme-light {
@@ -26,7 +30,7 @@ body.theme-light {
   --btn-bg: rgba(0,0,0,0.06);
   --btn-bg-hover: rgba(0,0,0,0.12);
   --danger: #d43535;
-  --readbar-bg: rgba(255,255,255,0.85);
+  --readbar-bg: rgba(255,255,255,0.95);
   --readbar-fg: #0b0c10;
   --readbar-muted: #666a70;
 }
@@ -42,7 +46,7 @@ body.theme-sepia {
   --btn-bg: rgba(0,0,0,0.06);
   --btn-bg-hover: rgba(0,0,0,0.12);
   --danger: #c63c3c;
-  --readbar-bg: rgba(245,239,227,0.92);
+  --readbar-bg: rgba(245,239,227,0.95);
   --readbar-fg: #3b2f27;
   --readbar-muted: #7b6a5a;
 }
@@ -93,8 +97,8 @@ body {
 /* Stage / content */
 #stage { position: relative; overflow: auto; }
 .content {
-  min-height: calc(100vh - 120px);
-  padding: 26px clamp(16px, 3vw, 36px) 170px; /* bottom padding to clear dock + readbar */
+  min-height: calc(100vh - var(--dock-h) - 140px);
+  padding: 26px clamp(16px, 3vw, 36px) calc(var(--dock-h) + 120px);
   line-height: 1.6;
   transition: background .2s, color .2s;
 }
@@ -117,22 +121,18 @@ body {
   border-radius: 8px;
 }
 
-/* EPUB mount */
+/* EPUB mount (now scrollable) */
 .epub-mount {
   width: 100%;
-  height: calc(100vh - 200px);
+  height: calc(100vh - var(--dock-h) - 120px);
   background: var(--page-bg);
   border-radius: 8px;
-  overflow: hidden;
+  overflow: auto; /* <-- was hidden; now scrollable */
   box-shadow: 0 10px 40px rgba(0,0,0,.20);
 }
 
 /* Lens (placeholder style) */
-#lens {
-  position: absolute; inset: 0;
-  pointer-events: none;
-  display: none;
-}
+#lens { position: absolute; inset: 0; pointer-events: none; display: none; }
 body.lens-on #lens { display: block; }
 
 /* ---------- Bottom Dock ---------- */
@@ -149,7 +149,7 @@ body.lens-on #lens { display: block; }
   backdrop-filter: saturate(1.2) blur(8px);
   box-shadow: 0 -6px 30px rgba(0,0,0,.35);
   color: var(--fg);
-  z-index: 1000;
+  z-index: 4000;
 }
 
 .dock-left, .dock-mid, .dock-right {
@@ -197,18 +197,19 @@ body.reader .content { max-width: 780px; margin-inline: auto; }
 /* ---------- Read Bar (karaoke) ---------- */
 .readbar {
   position: fixed;
-  left: 0; right: 0;
-  bottom: 80px; /* sits above dock */
-  padding: 10px 16px;
-  z-index: 999;
+  left: 10px; right: 10px;
+  bottom: calc(var(--dock-h) + var(--readbar-gap));
+  padding: 12px 14px;
+  z-index: 5000; /* above dock */
   display: grid;
   grid-template-rows: auto auto auto;
   gap: 6px;
   background: var(--readbar-bg);
   color: var(--readbar-fg);
-  border-top: 1px solid var(--dock-border);
-  border-bottom: 1px solid var(--dock-border);
-  backdrop-filter: blur(6px);
+  border: 1px solid var(--dock-border);
+  border-radius: 12px;
+  backdrop-filter: blur(6px) saturate(1.1);
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
 }
 .readbar .rb-prev,
 .readbar .rb-next {
@@ -225,4 +226,8 @@ body.reader .content { max-width: 780px; margin-inline: auto; }
 }
 
 /* In-page sentence highlight for TXT/HTML */
-.read-sent { background: color-mix(in oklab, var(--accent) 30%, transparent); border-radius: 4px; padding: 0 2px; }
+.read-sent {
+  background: color-mix(in oklab, var(--accent) 32%, transparent);
+  border-radius: 4px;
+  padding: 0 2px;
+}
