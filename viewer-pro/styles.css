@@ -84,8 +84,8 @@ body {
 /* Stage / content */
 #stage { position: relative; overflow: auto; }
 .content {
-  min-height: calc(100vh - 92px);
-  padding: 26px clamp(16px, 3vw, 36px) 130px; /* bottom padding to clear dock */
+  min-height: calc(100vh - 120px);
+  padding: 26px clamp(16px, 3vw, 36px) 150px; /* bottom padding to clear dock */
   line-height: 1.6;
   transition: background .2s, color .2s;
 }
@@ -111,7 +111,7 @@ body {
 /* EPUB mount */
 .epub-mount {
   width: 100%;
-  height: calc(100vh - 160px);
+  height: calc(100vh - 180px);
   background: var(--page-bg);
   border-radius: 8px;
   overflow: hidden;
@@ -132,9 +132,9 @@ body.lens-on #lens { display: block; }
   left: 0; right: 0; bottom: 0;
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
-  padding: 12px 16px;
+  padding: 12px 14px;
   background: var(--dock-bg);
   border-top: 1px solid var(--dock-border);
   backdrop-filter: saturate(1.2) blur(8px);
@@ -146,6 +146,15 @@ body.lens-on #lens { display: block; }
 .dock-left, .dock-mid, .dock-right {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
+
+/* 🎧 TTS group */
+.dock-tts {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  border-left: 1px dashed var(--dock-border);
+  border-right: 1px dashed var(--dock-border);
+  padding-inline: 10px;
+}
+.tts-label { font-weight: 700; letter-spacing: .02em; }
 
 .stats { font-size: 12px; line-height: 1.25; text-align: right; }
 #statStatus { color: var(--muted); }
@@ -171,6 +180,7 @@ body.lens-on #lens { display: block; }
 .ctrl { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; }
 .ctrl input[type=range] { vertical-align: middle; }
 .ctrl.checkbox { gap: 6px; color: var(--fg); }
+.ctrl.checkbox.small { font-size: 12px; }
 
 /* Reader mode makes text area narrower for long-form reading */
 body.reader .content { max-width: 780px; margin-inline: auto; }
