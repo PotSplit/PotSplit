@@ -1,8 +1,4 @@
-/* AeonSight Pro — EPUB scroll fix + Read Bar visibility + TTS highlighting
-   - EPUB is now vertical scroll (flow: "scrolled-doc") and the mount is overflow:auto
-   - Read Bar sits above the dock using a measured CSS variable
-   - TXT/HTML sentences highlight while Audio Reader plays
-*/
+/* AeonSight Pro — EPUB scroll + Read Bar + TTS; dock auto-resize; bugfixes */
 
 ////////////////////
 // DOM references //
@@ -431,10 +427,10 @@ async function openEPUB(name, dataUrl){
 
     state.epubRend = state.epubBook.renderTo(mount, {
       width: '100%',
-      height: '100%',            // let CSS control actual height
+      height: '100%',
       spread: 'none',
       allowScriptedContent: allowScripts,
-      flow: 'scrolled-doc'       // <-- vertical scroll
+      flow: 'scrolled-doc'       // vertical scroll
     });
 
     state.epubFontPct = Number(fontPct.value || 100);
@@ -697,7 +693,7 @@ async function ttsStartFollow() {
     if (state.tts.mapToPlain) markPlainSentence(i);
 
     const u = buildUtterance(cur);
-    u.onstart = () => { /* ensure bar visible */ showReadBar(prev, cur, next); };
+    u.onstart = () => { showReadBar(prev, cur, next); };
     u.onend = () => { state.tts.idx++; speakNext(); };
     u.onerror = () => { state.tts.idx++; speakNext(); };
     try { speechSynthesis.speak(u); } catch { state.tts.idx++; speakNext(); }
@@ -803,7 +799,7 @@ fontPct.addEventListener('change', persistCfg);
 toggleReader.onclick = ()=>{
   const on = document.body.classList.toggle('reader');
   toggleReader.textContent = on ? 'Exit Reader Mode' : 'Reader Mode';
-  toggleReader.setAttribute('aria-pressed', on ? 'true' : 'false'));
+  toggleReader.setAttribute('aria-pressed', on ? 'true' : 'false'); // <-- fixed stray ')'
   persistCfg();
   contentEl.focus({ preventScroll: false });
 };
@@ -967,7 +963,10 @@ async function buildSampleEpub(){
     <item id="chap1" href="chapter1.xhtml" media-type="application/xhtml+xml"/>
     <item id="css" href="style.css" media-type="text/css"/>
   </manifest>
-  <spine><itemref idref="chap1"/></spine>`);
+  <spine>
+    <itemref idref="chap1"/>
+  </spine>
+</package>`); // <-- closed package tag restored
 
   const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
   const dataUrl = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(blob); });
@@ -1002,7 +1001,11 @@ async function buildSampleEpub(){
   contentEl.focus();
 
   ttsPopulateVoices();
+
   syncDockHeight();
+  // Keep content padding synced to dock height in ALL cases
+  const ro = new ResizeObserver(()=> syncDockHeight());
+  ro.observe(dockEl);
   window.addEventListener('resize', syncDockHeight);
 })();
 
