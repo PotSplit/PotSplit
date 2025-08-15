@@ -15,6 +15,7 @@
   --readbar-muted: #b8c2cf;
   --dock-h: 84px;             /* JS keeps this in sync */
   --readbar-gap: 10px;
+  --lens-dim: rgba(0,0,0,.45);
 }
 
 body.theme-light {
@@ -31,6 +32,7 @@ body.theme-light {
   --readbar-bg: rgba(255,255,255,0.95);
   --readbar-fg: #0b0c10;
   --readbar-muted: #666a70;
+  --lens-dim: rgba(0,0,0,.35);
 }
 
 body.theme-sepia {
@@ -47,6 +49,7 @@ body.theme-sepia {
   --readbar-bg: rgba(245,239,227,0.95);
   --readbar-fg: #3b2f27;
   --readbar-muted: #7b6a5a;
+  --lens-dim: rgba(0,0,0,.30);
 }
 
 /* ---------- Base layout ---------- */
@@ -98,11 +101,10 @@ body {
   min-height: calc(100vh - var(--dock-h) - 140px);
   padding: 26px clamp(16px, 3vw, 36px) calc(var(--dock-h) + 120px);
   line-height: 1.6;
-  transition: background .2s, color .2s;
+  transition: background .2s, color .2s, max-width .1s;
+  margin: 0 auto;                 /* center when FOV applies */
+  max-width: 900px;               /* initial FOV until JS runs */
 }
-.content.wide { max-width: 1200px; margin: 0 auto; }
-.content.narrow { max-width: 700px; margin: 0 auto; }
-
 .content.empty {
   display: grid;
   place-items: center;
@@ -129,8 +131,17 @@ body {
   box-shadow: 0 10px 40px rgba(0,0,0,.20);
 }
 
-/* Lens (placeholder style) */
-#lens { position: absolute; inset: 0; pointer-events: none; display: none; }
+/* Reading lens (mask outside the band) */
+#lens {
+  position: fixed;
+  left: 0; right: 0;
+  top: 30vh;
+  height: 180px;                  /* JS updates live */
+  pointer-events: none;
+  display: none;
+  box-shadow: 0 0 0 9999px var(--lens-dim);
+  border-radius: 10px;
+}
 body.lens-on #lens { display: block; }
 
 /* ---------- Bottom Dock ---------- */
@@ -149,7 +160,7 @@ body.lens-on #lens { display: block; }
   color: var(--fg);
   z-index: 4000;
 
-  /* Make sure you can *always* reach controls */
+  /* always reachable */
   overflow-x: auto;
 }
 
