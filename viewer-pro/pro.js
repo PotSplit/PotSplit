@@ -456,11 +456,12 @@ async function renderPDFPage(){
 
 async function openEPUB(name, dataUrl){
   try{
-    if (!window['ePub']) throw new Error('ePub.js missing');
-    if (!window['JSZip']) throw new Error('JSZip missing (EPUB needs JSZip)');
+    // Make sure the libs exist (loads them if missing)
+    await ensureEPUBLibs();
 
     const allowScripts = !!allowScriptsChk?.checked;
 
+    // Open from ArrayBuffer (no network fetch)
     const bytes = dataUrlToUint8(dataUrl);
     state.epubBook = ePub();
     await state.epubBook.open(bytes.buffer, 'binary');
@@ -470,73 +471,36 @@ async function openEPUB(name, dataUrl){
     mount.className = 'epub-mount';
     contentEl.appendChild(mount);
 
-    // Guard BEFORE EPUB.js appends its iframe
-    guardIframeInsertion(mount, allowScripts);
-
     state.epubRend = state.epubBook.renderTo(mount, {
       width: '100%',
       height: '84vh',
       spread: 'none',
-      allowScriptedContent: allowScripts
+      allowScriptedContent: allowScripts // controlled by your checkbox
     });
 
     // Theme & font size
     state.epubFontPct = Number(fontPct.value || 100);
     state.epubRend.themes.register('aeon', {
-      'body': { 'color':'var(--fg)','background':'var(--bg)','line-height':'1.7', 'font-size':`${state.epubFontPct}%` },
+      'body': { 'color':'#eaf0ff','background':'#0b0c10','line-height':'1.7', 'font-size':`${state.epubFontPct}%` },
       'p':    { 'margin':'0 0 1em 0' }
     });
     state.epubRend.themes.select('aeon');
 
-    // Inject search CSS + handlers when displayed (only if scripts OFF so we have same-origin)
-    state.epubRend.on('displayed', (view)=>{
-      try{
-        setSandboxTokens(view.iframe, allowScripts);
-        if (!allowScripts){
-          const doc = view.document;
-          if (doc && !doc.querySelector('style[data-aeon]')){
-            const st = doc.createElement('style');
-            st.setAttribute('data-aeon','');
-            st.textContent = `.epub-mark{ background: rgba(255,255,0,.35); outline: 1px solid rgba(0,255,209,.6); }`;
-            doc.head.appendChild(st);
-          }
-        }
-      }catch{}
-    });
+    // First display, then force sandbox policy to avoid the
+    // "allow-scripts + allow-same-origin" DevTools warning.
+    await state.epubRend.display();
+    forceEpubSandbox(allowScripts);
     state.epubRend.on('rendered', ()=> forceEpubSandbox(allowScripts));
 
-    // Relocation -> progress + save position
     state.epubRend.on('relocated', (loc)=>{
       try{
-        const pct = Math.round((loc?.start?.percentage || 0) * 100);
-        statProg.textContent = isFinite(pct) ? `${pct}%` : '—';
-        const disp = loc?.start?.displayed;
-        statPage.textContent = (disp && disp.page && disp.total) ? `${disp.page}/${disp.total}` : '—';
-        savePosition({ type:'epub', cfi: loc?.start?.cfi });
+        const pct = Math.round(loc.start.percentage * 100);
+        statProg.textContent = `${pct}%`;
+        statPage.textContent = `${loc.start.displayed.page}/${loc.start.displayed.total}`;
         state.wordsRead += Math.round(250 * 0.9);
         kickSleepGuard();
       }catch{}
     });
-
-    // Build TOC
-    try{
-      tocList.innerHTML = '';
-      const nav = await state.epubBook.loaded.navigation;
-      (nav?.toc || []).forEach(item=>{
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <div class="meta">
-            <div class="name">${item.label}</div>
-            <div class="sub">${item.href || ''}</div>
-          </div>
-          <div class="actions"><button class="btn small subtle" data-href="${item.href}">Open</button></div>
-        `;
-        tocList.appendChild(li);
-      });
-    }catch{}
-
-    await state.epubRend.display();
-    forceEpubSandbox(allowScripts);
 
     setStatus('Ready');
   }catch(err){
@@ -545,6 +509,7 @@ async function openEPUB(name, dataUrl){
     setStatus('Error');
   }
 }
+
 
 async function openPlain(name, dataUrl, type){
   try{
